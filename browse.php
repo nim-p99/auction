@@ -4,7 +4,7 @@
 <div class="container">
 
 
-<h2 class="my-3">Browse listings TESTING 1 more change...</h2>
+<h2 class="my-3">Browse listings</h2>
 
 
 <div id="searchSpecs">
