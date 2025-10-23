@@ -1,0 +1,21 @@
+#DROP DATABASE Auction;
+
+CREATE DATABASE Auction
+  DEFAULT CHARACTER SET utf8
+  DEFAULT COLLATE utf8_general_ci;
+
+GRANT SELECT, UPDATE, INSERT, DELETE
+  ON Auction.*
+  TO 'auction@localhost'
+  IDENTIFIED BY 'ucl';
+
+USE Auction;
+
+CREATE TABLE Users
+(
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(40) NOT NULL,
+  password VARCHAR(40) NOT NULL
+);
+
+

@@ -1,6 +1,6 @@
 <?php
-  $pageTitle = "Browse"
-  include_once("header.php")
+  $pageTitle = "Browse";
+  include_once("header.php");
 ?>
 <?php require("utilities.php")?>
 

@@ -5,7 +5,7 @@
   // database query.
   session_start();
   $_SESSION['logged_in'] = false;
-  $_SESSION['account_type'] = 'seller';
+  $_SESSION['account_type'] = 'buyer';
 ?>
 
 
@@ -25,7 +25,7 @@
   <!-- can use $pageTitle variable - which we set for each page -->
   <!-- $pageTitle = "Index" -->
   <!-- include header.php --> 
-<?php echo""<title>Orction - $pageTitle</title>
+<?php echo"<title>Orction - $pageTitle</title>" ?>
 </head>
 
 
@@ -33,7 +33,7 @@
 
 <!-- Navbars -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light mx-2">
-  <a class="navbar-brand" href="#">Site Name <!--CHANGEME!--></a>
+  <a class="navbar-brand" href="#">Orction<!--CHANGEME!--></a>
   <ul class="navbar-nav ml-auto">
     <li class="nav-item">
     
