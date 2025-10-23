@@ -25,7 +25,7 @@
   <!-- can use $pageTitle variable - which we set for each page -->
   <!-- $pageTitle = "Index" -->
   <!-- include header.php --> 
-  <title>[My Auction Site] <!--CHANGEME!--></title>
+<?php echo""<title>Orction - $pageTitle</title>
 </head>
 
 

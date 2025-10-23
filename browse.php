@@ -1,11 +1,12 @@
-<?php include_once("header.php")?>
+<?php
+  $pageTitle = "Browse"
+  include_once("header.php")
+?>
 <?php require("utilities.php")?>
 
 <div class="container">
 
-
-<h2 class="my-3">Browse LISTINGS</h2>
-
+<h2 class="my-3">Browse AUCTION LISTINGS</h2>
 
 <div id="searchSpecs">
 <!-- When this form is submitted, this PHP page is what processes it.
