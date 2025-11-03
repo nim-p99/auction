@@ -6,6 +6,8 @@
   session_start();
   $_SESSION['logged_in'] = true;
   $_SESSION['account_type'] = 'seller';
+  $_SESSION['user_id'] = 'nim';
+  $seller_id = $_SESSION['user_id'];
 ?>
 
 
@@ -73,7 +75,7 @@
   if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'seller') {
   echo('
 	<li class="nav-item mx-1">
-      <a class="nav-link" href="mylistings.php">My Listings</a>
+      <a class="nav-link" href="mylistings.php?seller_id=' . $seller_id . '">My Listings</a>
     </li>
 	<li class="nav-item ml-3">
       <a class="nav-link btn border-light" href="create_auction.php">+ Create auction</a>

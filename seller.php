@@ -14,14 +14,14 @@ $_SESSION['user_id'] = "nim";
 ?>
 
 
-<?php echo("<div class='container'><h2 class='my-3'>" . $seller_id . "'s Profile</h2></div>");?>
+<?php echo("<div class='container'><h2 class='my-3'>" . $seller_id . "'s Seller Profile</h2></div>");?>
 
 
 <ul class="list-group">
 <li>
 <?php 
 echo('<div class="p-2 mr-5"><h5><a href="mylistings.php?seller_id=' . $seller_id . '">Listings</a></h5></div>');
-echo('<div class="p-2 mr-5"><h5><a href="sellerreviews.php?seller_id=' . $seller_id . '">Seller reviews</a></h5></div>');
+echo('<div class="p-2 mr-5"><h5><a href="reviews.php?seller_id=' . $seller_id . '">Seller reviews</a></h5></div>');
 ?>
 </li>
 </ul>
