@@ -5,7 +5,7 @@
 
 // For now, I will just set session variables and redirect.
 
-session_start();
+//session_start();
 $_SESSION['logged_in'] = true;
 $_SESSION['username'] = "test";
 $_SESSION['account_type'] = "buyer";
