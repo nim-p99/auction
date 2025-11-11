@@ -11,7 +11,7 @@ return array(
   'database' => 'auction_site'
 );
 
-#### directory structure:
+directory structure:
 htdocs
 -> auction_config
   -> db_config.php
