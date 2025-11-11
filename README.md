@@ -2,6 +2,15 @@
 in htdocs directory - create a directory 'auction_config'.
 Inside auction_config, create a file 'db_config.php'. 
 
+#### directory structure:
+htdocs
+-> auction_config
+  -> db_config.php
+-> auction
+  -> all auction files
+  -> .....
+
+
 #### db_config.php:
 <?php
 return array(
