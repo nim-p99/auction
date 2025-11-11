@@ -34,3 +34,6 @@ htdocs
   -> all auction files
   -> .....
 ```
+#### ensure correct user details on myPhpAdmin:
+<img width="831" height="445" alt="image" src="https://github.com/user-attachments/assets/f65d73ff-ed37-4097-8d26-15aee7f7953b" />
+check host name and username are correct as above.
