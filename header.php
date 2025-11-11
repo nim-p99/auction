@@ -4,11 +4,12 @@
   // ONLY after the user's login credentials have been verified via a 
   // database query.
 session_start();
-#require_once __DIR__ . '/database.php';
+require_once 'database.php';
   $_SESSION['logged_in'] = true;
   $_SESSION['account_type'] = 'buyer';
-  $_SESSION['user_id'] = 'nim';
+  $_SESSION['user_id'] = 'User';
   $seller_id = $_SESSION['user_id'];
+  $buyer_id = $_SESSION['user_id'];
 ?>
 
 
@@ -36,7 +37,7 @@ session_start();
 
 <!-- Navbars -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light mx-2">
-  <a class="navbar-brand" href="browse.php">best auction site<!--CHANGEME!--></a>
+  <a class="navbar-brand" href="browse.php">auction site<!--CHANGEME!--></a>
   <ul class="navbar-nav ml-auto">
     <li class="nav-item">
     

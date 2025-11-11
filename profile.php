@@ -2,9 +2,8 @@
 <?php require("utilities.php")?>
 <?php 
 // Take session user_id --> convert to seller_id
-$_SESSION['user_id'] = "nim";
+# $_SESSION['user_id'] = "User";
 // TODO: query database to extract buyer/ seller ids from user_id
-$seller_id = $_SESSION['user_id'];
 ?>
 
 <div class="container">

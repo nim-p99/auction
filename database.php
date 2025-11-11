@@ -1,4 +1,4 @@
-<?php 
+<?php
 $config = include('/opt/lampp/htdocs/auction_config/db_config.php');
 
 $connection = mysqli_connect(
@@ -7,8 +7,11 @@ $connection = mysqli_connect(
   $config['password'],
   $config['database']
 );
-
 if (!$connection) {
-  die("Database connection failed: " . myqsli_connect_error());
+    die("Database connection failed: " . mysqli_connect_error());
+} else {
+    echo "Database connected successfully!";
 }
+?>
+
 
