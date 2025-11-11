@@ -3,9 +3,10 @@
   // But eventually, with a database, these should be set automatically
   // ONLY after the user's login credentials have been verified via a 
   // database query.
-  session_start();
+session_start();
+#require_once __DIR__ . '/database.php';
   $_SESSION['logged_in'] = true;
-  $_SESSION['account_type'] = 'seller';
+  $_SESSION['account_type'] = 'buyer';
   $_SESSION['user_id'] = 'nim';
   $seller_id = $_SESSION['user_id'];
 ?>
@@ -70,7 +71,20 @@
     </li>
 	<li class="nav-item mx-1">
       <a class="nav-link" href="recommendations.php">Recommended</a>
-    </li>');
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="watchlist.php">Watchlist</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="recently_viewed.php">Recently Viewed</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="myorders.php">My Orders</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="my_profile.php">My Profile</a>
+    </li>
+    ');
   }
   if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'seller') {
   echo('
