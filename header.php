@@ -7,9 +7,10 @@ session_start();
 require_once 'database.php';
   $_SESSION['logged_in'] = true;
   $_SESSION['account_type'] = 'buyer';
-  $_SESSION['user_id'] = 'User';
+  $_SESSION['user_id'] = 'Tony';
   $seller_id = $_SESSION['user_id'];
   $buyer_id = $_SESSION['user_id'];
+  $username = $_SESSION['user_id']
 ?>
 
 
@@ -46,7 +47,7 @@ require_once 'database.php';
   // current status (session).
   if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) {
     echo '<div class="d-flex align-items-center">';
-    echo '<a class="nav-link" href="profile.php">My Profile</a>';
+    echo '<a class="nav-link" href="my_profile.php">My Profile</a>';
     echo '<a class="nav-link" href="logout.php">Logout</a>';
 
     echo '</div>'; 
@@ -68,19 +69,19 @@ require_once 'database.php';
   if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'buyer') {
   echo('
 	<li class="nav-item mx-1">
-      <a class="nav-link" href="mybids.php">My Bids</a>
+      <a class="nav-link" href="buyer.php?tab=mybids.php">My Bids</a>
     </li>
 	<li class="nav-item mx-1">
-      <a class="nav-link" href="recommendations.php">Recommended</a>
+      <a class="nav-link" href="buyer.php?tab=recommendations.php">Recommended</a>
     </li>
   <li class="nav-item mx-1">
-      <a class="nav-link" href="watchlist.php">Watchlist</a>
+      <a class="nav-link" href="buyer.php?tab=watchlist.php">Watchlist</a>
     </li>
   <li class="nav-item mx-1">
-      <a class="nav-link" href="recently_viewed.php">Recently Viewed</a>
+      <a class="nav-link" href="buyer.php?tab=recentlyviewed.php">Recently Viewed</a>
     </li>
   <li class="nav-item mx-1">
-      <a class="nav-link" href="myorders.php">My Orders</a>
+      <a class="nav-link" href="buyer.php?tab=myorders.php">My Orders</a>
     </li>
   <li class="nav-item mx-1">
       <a class="nav-link" href="my_profile.php">My Profile</a>

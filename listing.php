@@ -62,7 +62,7 @@ $seller_id = "spiderman";
 
 <div class="row"> <!-- Row #2 with seller profile button -->
   <div class="col-sm-4">
-    <?php echo('<a href="seller.php?seller_id=' . $seller_id . '">Seller Profile</a>');?>
+    <?php echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');?>
   </div>
 </div>
 

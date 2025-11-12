@@ -1,10 +1,6 @@
-<?php include_once("header.php")?>
-<?php require("utilities.php")?>
+<?php require_once ("utilities.php")?>
 
 <div class="container">
-
-<h2 class="my-3">My Bids</h2>
-
 <div id="searchSpecs">
 <!-- When this form is submitted, this PHP page is what processes it.
      Search/sort specs are passed to this page through parameters in the URL
@@ -213,4 +209,3 @@
   
 ?>
 
-<?php include_once("footer.php")?>
