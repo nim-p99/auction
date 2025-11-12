@@ -1,5 +1,5 @@
 <?php
-$config = include('/opt/lampp/htdocs/auction_config/db_config.php');
+$config = include('htdocs/auction_config/db_config.php');
 
 $connection = mysqli_connect(
   $config['host'],
