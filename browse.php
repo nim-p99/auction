@@ -8,7 +8,8 @@
 
 <!-- Navigation -->
 <?php
-$filter_cat = $_GET['cat'] ?? 'fill'; // default to 'all' categories
+// might not need this depending on if used !isset below
+$filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
 $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 ?>
 
@@ -36,10 +37,19 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
         <select class="form-control" id="cat">
-          <option selected value="all">All categories</option>
-          <option value="fill">Fill me in</option>
-          <option value="with">with options</option>
-          <option value="populated">populated from a database?</option>
+          <!-- first option will be all categories 
+          need to come back to this if we want to order by parent category then list its children
+          -->
+          <option value="all">All Categories</option>
+
+          <?php
+            #category populated from database
+            $category_query = "SELECT * from category AS c";
+            $categories_to_list = mysqli_query($connection, $category_query);
+            while ($row = mysqli_fetch_assoc($categories_to_list)) : ?>
+                <?php echo "<option value = '{$row['category_id']}'> {$row['category_name']}</option>"; ?>
+          <?php endwhile ?>
+
         </select>
       </div>
     </div>
@@ -116,26 +126,27 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 
 <div class="list-container">
 <?php 
-  global $connection;
 
   $final_query = "SELECT * from auction AS a 
   JOIN item AS i 
   ON a.item_id = i.item_id  ";
   $auctions_to_list = mysqli_query($connection, $final_query);
 
-//loop through each item and display it
+//loop through each item and display it in list container
   while ($row = mysqli_fetch_assoc($auctions_to_list)) : ?>
-      <div class="list-group">
+      <div class="list-group"> 
         <?php 
         $item_id = $row['item_id'];
         $title = $row['title'];
         $description = $row['description'];
-        $end_date = $row['end_date_time']; // Placeholder end date
+        $end_date = $row['end_date_time']; 
         $current_price = $row['current_price']; 
         $num_bids =$row['num_bids'];
 
         //using the print listing function from utilities.php
+        //need to update so if starting price > current price = print starting price not current price
         print_listing_li($item_id, $title, $description, $current_price, $num_bids, $end_date) ?>
+        
       </div>
       
   <?php endwhile; ?>
