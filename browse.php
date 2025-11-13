@@ -112,9 +112,8 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
   
   /* For the purposes of pagination, it would also be helpful to know the
      total number of results that satisfy the above query */
-  $num_results = 96; // TODO: Calculate me for real
-  $results_per_page = 10;
-  $max_page = ceil($num_results / $results_per_page);
+  // TODO: Calculate me for real
+ 
 ?>
 
 <div class="container mt-5">
@@ -131,6 +130,7 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
 <?php 
 
   // Construct the final query using the filter category and sort by
+  // need to change so only active auctions are shown
   $final_query = "SELECT * from auction AS a 
   JOIN item AS i ON a.item_id = i.item_id
   JOIN category AS c ON c.category_id = i.category_id 
@@ -141,6 +141,11 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
 
   // Use the function from utilities.php to print the listings
   list_table_items($auctions_to_list);
+
+  // For pagination calculations
+  $num_results = mysqli_num_rows($auctions_to_list);
+  $results_per_page = 10;
+  $max_page = ceil($num_results / $results_per_page);
 ?>
   </div>
 
