@@ -84,6 +84,8 @@ CREATE TABLE auction (
   buy_now_price DECIMAL(10,2),
   start_date_time DATETIME NOT NULL,
   end_date_time DATETIME NOT NULL,
+  current_price INT UNSIGNED,
+  num_bids INT UNSIGNED,
   FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
   FOREIGN KEY (item_id) REFERENCES item(item_id)
 )ENGINE=InnoDB;
