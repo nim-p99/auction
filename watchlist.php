@@ -1,11 +1,12 @@
 <?php require_once ("utilities.php")?>
 
 <div class="container">
+
 <div id="searchSpecs">
 <!-- When this form is submitted, this PHP page is what processes it.
      Search/sort specs are passed to this page through parameters in the URL
      (GET method of passing data to a page). -->
-<form method="get" action="mybids.php">
+<form method="get" action="watchlist.php">
   <div class="row">
     <div class="col-md-5 pr-0">
       <div class="form-group">
@@ -147,7 +148,7 @@
   if ($curr_page != 1) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
@@ -168,14 +169,14 @@
     
     // Do this in any case
     echo('
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
   
   if ($curr_page != $max_page) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>
@@ -191,7 +192,7 @@
 
 
 
-
+<?php include_once("footer.php")?>
 
 <?php
   // This page is for showing a user the auctions they've bid on.
@@ -208,4 +209,5 @@
   // TODO: Loop through results and print them out as list items.
   
 ?>
+
 

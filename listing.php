@@ -5,14 +5,17 @@
   // Get info from the URL:
   $item_id = $_GET['item_id'];
 
-  // TODO: Use item_id to make a query to the database.
+// TODO: Use item_id to make a query to the database.
+// extract seller_id for seller profile, remove example below
+$seller_id = "spiderman";
+
 
   // DELETEME: For now, using placeholder data.
   $title = "Placeholder title";
   $description = "Description blah blah blah";
   $current_price = 30.50;
   $num_bids = 1;
-  $end_time = new DateTime('2020-11-02T00:00:00');
+  $end_time = new DateTime('2026-11-02T00:00:00');
 
   // TODO: Note: Auctions that have ended may pull a different set of data,
   //       like whether the auction ended in a sale or was cancelled due
@@ -57,7 +60,13 @@
   </div>
 </div>
 
-<div class="row"> <!-- Row #2 with auction description + bidding info -->
+<div class="row"> <!-- Row #2 with seller profile button -->
+  <div class="col-sm-4">
+    <?php echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');?>
+  </div>
+</div>
+
+<div class="row"> <!-- Row #3 with auction description + bidding info -->
   <div class="col-sm-8"> <!-- Left col with item info -->
 
     <div class="itemDescription">

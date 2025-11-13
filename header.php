@@ -3,9 +3,14 @@
   // But eventually, with a database, these should be set automatically
   // ONLY after the user's login credentials have been verified via a 
   // database query.
-  session_start();
-  $_SESSION['logged_in'] = false;
+session_start();
+require_once 'database.php';
+  $_SESSION['logged_in'] = true;
   $_SESSION['account_type'] = 'seller';
+  $_SESSION['user_id'] = 'Tony';
+  $seller_id = $_SESSION['user_id'];
+  $buyer_id = $_SESSION['user_id'];
+  $username = $_SESSION['user_id']
 ?>
 
 
@@ -33,7 +38,7 @@
 
 <!-- Navbars -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light mx-2">
-  <a class="navbar-brand" href="#">Site Name <!--CHANGEME!--></a>
+  <a class="navbar-brand" href="browse.php">auction site<!--CHANGEME!--></a>
   <ul class="navbar-nav ml-auto">
     <li class="nav-item">
     
@@ -41,7 +46,11 @@
   // Displays either login or logout on the right, depending on user's
   // current status (session).
   if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) {
+    echo '<div class="d-flex align-items-center">';
+    echo '<a class="nav-link" href="my_profile.php">My Profile</a>';
     echo '<a class="nav-link" href="logout.php">Logout</a>';
+
+    echo '</div>'; 
   }
   else {
     echo '<button type="button" class="btn nav-link" data-toggle="modal" data-target="#loginModal">Login</button>';
@@ -60,16 +69,29 @@
   if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'buyer') {
   echo('
 	<li class="nav-item mx-1">
-      <a class="nav-link" href="mybids.php">My Bids</a>
+      <a class="nav-link" href="buyer.php?tab=mybids.php">My Bids</a>
     </li>
 	<li class="nav-item mx-1">
-      <a class="nav-link" href="recommendations.php">Recommended</a>
-    </li>');
+      <a class="nav-link" href="buyer.php?tab=recommendations.php">Recommended</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="buyer.php?tab=watchlist.php">Watchlist</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="buyer.php?tab=recentlyviewed.php">Recently Viewed</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="buyer.php?tab=myorders.php">My Orders</a>
+    </li>
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="my_profile.php">My Profile</a>
+    </li>
+    ');
   }
   if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'seller') {
   echo('
 	<li class="nav-item mx-1">
-      <a class="nav-link" href="mylistings.php">My Listings</a>
+      <a class="nav-link" href="mylistings.php?seller_id=' . $seller_id . '">My Listings</a>
     </li>
 	<li class="nav-item ml-3">
       <a class="nav-link btn border-light" href="create_auction.php">+ Create auction</a>
