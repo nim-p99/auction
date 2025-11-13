@@ -36,7 +36,7 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
     <div class="col-md-3 pr-0">
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
-        <select class="form-control" id="cat">
+        <select class="form-control" id="cat" name="cat">
           <!-- first option will be all categories 
           need to come back to this if we want to order by parent category then list its children
           -->
@@ -74,27 +74,27 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 </div>
 
 <?php
-  // Retrieve these from the URL
-  if (!isset($_GET['keyword'])) {
-    // TODO: Define behavior if a keyword has not been specified.
-  }
-  else {
-    $keyword = $_GET['keyword'];
-  }
+  // // Retrieve these from the URL
+  // //if (!isset($_GET['keyword'])) {
+  //   // TODO: Define behavior if a keyword has not been specified.
+  // //}
+  // //else {
+  //   //$keyword = $_GET['keyword'];
+  // }
 
-  if (!isset($_GET['cat'])) {
-    // TODO: Define behavior if a category has not been specified.
-  }
-  else {
-    $category = $_GET['cat'];
-  }
+  // if (!isset($_GET['cat'])) {
+  //   // TODO: Define behavior if a category has not been specified.
+  // }
+  // else {
+  //   $category = $_GET['cat'];
+  // }
   
-  if (!isset($_GET['order_by'])) {
-    // TODO: Define behavior if an order_by value has not been specified.
-  }
-  else {
-    $ordering = $_GET['order_by'];
-  }
+  // if (!isset($_GET['order_by'])) {
+  //   // TODO: Define behavior if an order_by value has not been specified.
+  // }
+  // else {
+  //   $ordering = $_GET['order_by'];
+  // }
   
   if (!isset($_GET['page'])) {
     $curr_page = 1;
@@ -127,29 +127,20 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 <div class="list-container">
 <?php 
 
+  // Construct the final query using the filter category
   $final_query = "SELECT * from auction AS a 
-  JOIN item AS i 
-  ON a.item_id = i.item_id  ";
+  JOIN item AS i ON a.item_id = i.item_id
+  JOIN category AS c ON c.category_id = i.category_id 
+  WHERE 1=1 "
+  ;
+  $final_query .= filter_by_category($connection, $filter_cat,  $final_query);
+
+
   $auctions_to_list = mysqli_query($connection, $final_query);
 
-//loop through each item and display it in list container
-  while ($row = mysqli_fetch_assoc($auctions_to_list)) : ?>
-      <div class="list-group"> 
-        <?php 
-        $item_id = $row['item_id'];
-        $title = $row['title'];
-        $description = $row['description'];
-        $end_date = $row['end_date_time']; 
-        $current_price = $row['current_price']; 
-        $num_bids =$row['num_bids'];
-
-        //using the print listing function from utilities.php
-        //need to update so if starting price > current price = print starting price not current price
-        print_listing_li($item_id, $title, $description, $current_price, $num_bids, $end_date) ?>
-        
-      </div>
-      
-  <?php endwhile; ?>
+  // Use the function from utilities.php to print the listings
+  list_table_items($auctions_to_list);
+?>
   </div>
 
 <!-- Pagination for results listings -->

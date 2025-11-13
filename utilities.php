@@ -61,4 +61,53 @@ function print_listing_li($item_id, $title, $desc, $price, $num_bids, $end_time)
   );
 }
 
-?>
+function list_table_items($table) { ?>
+  <?php
+ while ($row = mysqli_fetch_assoc($table)): ?>
+      <div class="list-group"> 
+        <?php 
+        $item_id = $row['item_id'];
+        $title = $row['title'];
+        $description = $row['description'];
+        $end_date = $row['end_date_time']; 
+        $current_price = $row['current_price']; 
+        $num_bids =$row['num_bids'];
+
+        //using the print listing function from utilities.php
+        //need to update so if starting price > current price = print starting price not current price
+        print_listing_li($item_id, $title, $description, $current_price, $num_bids, $end_date) ?>
+      
+      </div>
+      
+  <?php endwhile; ?>
+<?php } ?>
+
+<?php 
+function filter_by_category($connection, $filter_cat,  $final_query) {
+
+  if ($filter_cat != 'all') {
+
+      $check_if_parent = "SELECT parent_category FROM category WHERE category_id = $filter_cat";
+      $parent_result = mysqli_query($connection, $check_if_parent);
+      $parent_row = mysqli_fetch_assoc($parent_result); // got row
+        if ($parent_row['parent_category'] === NULL ){ //is a parent category
+          $child_query = "SELECT category_id FROM category WHERE parent_category = $filter_cat";// get all child category ids of that parent
+          $child_result = mysqli_query($connection, $child_query);
+          $child_ids = [];
+          while ($child_row = mysqli_fetch_assoc($child_result)) {
+            $child_ids[] = $child_row['category_id']; // add each child id to array
+          }
+          $child_ids_string = implode(',', $child_ids); // need to convert array to string for sql query, its not possible to pass array directly
+          $final_query .= " AND c.category_id IN ($child_ids_string)";// add to final query 
+        }
+      
+    
+    
+        else {
+            //is a child category
+          $final_query .= " AND c.category_id = $filter_cat";
+        }
+      }
+
+    return $final_query;
+} ?>
