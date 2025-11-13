@@ -9,23 +9,28 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 // Define valid tabs for the buyer dashboard
-$valid_tabs = [
-  'mybids.php',
-  'myorders.php',
-  'recommendations.php',
-  'recentlyviewed.php',
-  'watchlist.php'];
+$tabs = [
+  'mybids.php' => 'My Bids',
+  'myorders.php' => 'My Orders',
+  'recommendations.php' => 'Recommendations',
+  'recentlyviewed.php' => 'Recently Viewed',
+  'watchlist.php' => 'Watchlist'
+];
 
 // Get the tab from URL or default to 'mybids'
 $current_tab = $_GET['tab'] ?? 'mybids.php';
 
 // If invalid, fall back to default
-if (!in_array($current_tab, $valid_tabs)) {
+if (!array_key_exists($current_tab, $tabs)) {
     $current_tab = 'mybids.php';
 }
+
+$tab_heading = $tabs[$current_tab];
 ?>
 
 <div class="container mt-4 mb-4">
+  <!-- Tab heading -->
+  <h2 class="mb-3"><?php echo htmlspecialchars($tab_heading); ?></h2>
   <!-- Load tab content -->
   <div class="tab-content p-3 border rounded bg-light">
     <?php

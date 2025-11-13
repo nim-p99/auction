@@ -29,6 +29,9 @@ $current_tab = $_GET['tab'] ?? $sections[$current_section][0];
 $filter_cat = $_GET['cat'] ?? 'fill'; // default to 'all' categories
 $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 
+
+
+$seller_id = 'Tony';
 ?>
 
 <div class="container mt-4 mb-4"> <!-- mt and mb are margin top and bottom -->
@@ -47,7 +50,7 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
                 </a>
 
                 <a class= "nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
-                   href="my_profile.php?section=seller"><!-- Seller Dashboard link -->
+                <?php echo('href="my_profile.php?section=seller&seller_id=' . $seller_id . '">') ?><!-- Seller Dashboard link -->
                     <i class="fa fa-gavel fa-fw mr-2"></i> Seller Dashboard
                 </a>
 
@@ -124,6 +127,97 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
                 </div> <!-- end buyer tab content -->
             </div> <!-- end card body -->
         <?php endif; ?> <!-- end buyer dashboard section -->
+
+        <!-- ======================================================================== -->
+        <!--                         SELLER DASHBOARD CONTENT                         -->
+        <!-- ======================================================================== -->
+        <?php if ($current_section == 'seller'): ?>
+            <div class = "card">
+                <div class="card-header">
+                <!--- Horizontal sub tabs for seller dashboard --->
+                <ul class= "nav nav-tabs card-header-tabs" id="seller-dashboard-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
+                        <?php echo('href="my_profile.php?section=seller&tab=listings&seller_id=' . $seller_id . '"');?>>My Listings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
+                        <?php echo('href="my_profile.php?section=seller&tab=listings&complete=true&seller_id=' . $seller_id . '"');?>>Completed Auctions</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="seller-tab-content">
+                    
+                    <!-- My Listings Tab Content -->
+                    <div class="tab-pane fade <?php if ($current_tab == 'listings') echo 'show active'; ?>" 
+                          id="listings" role="tabpanel">
+                      <h5 class="card-title">My Listings</h5>
+                      <p class="card-text"> Here you can view all of your listings.</p>
+                      <?php include "mylistings.php";?>
+                    </div>
+                    <!-- Completed Auctions tab content -->
+                    <div class="tab-pane fade <?php if ($current_tab == 'completed') echo 'show active'; ?>" 
+                          id="completed" role="tabpanel">
+                      <h5 class="card-title">Completed Auctions</h5>
+                      <p class="card-text"> Here you can view all of your completed auctions.</p>
+                      <?php include "mylistings.php";?>
+                    </div>
+                </div> <!-- end seller tab content -->
+            </div> <!-- end card body -->
+        <?php endif; ?> <!-- end seller dashboard section -->
+        <!-- ======================================================================== -->
+        <!--                         ACCOUNT DASHBOARD CONTENT                         -->
+        <!-- ======================================================================== -->
+        <?php if ($current_section == 'account'): ?>
+            <div class = "card">
+                <div class="card-header">
+                <!--- Horizontal sub tabs for seller dashboard --->
+                <ul class= "nav nav-tabs card-header-tabs" id="account-dashboard-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'details') echo 'active'; ?>" 
+                        href="my_profile.php?section=account&tab=details">Account Details</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'password') echo 'active'; ?>" 
+                        href="my_profile.php?section=account&tab=password">Password Details</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'payment_info') echo 'active'; ?>" 
+                        href="my_profile.php?section=account&tab=payment_info">Payment Info</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="account-tab-content">
+                    <!-- Account details Tab Content -->
+                    <div class="tab-pane fade <?php if ($current_tab == 'details') echo 'show active'; ?>" 
+                          id="details" role="tabpanel">
+                      <h5 class="card-title">Account Details</h5>
+                      <p class="card-text"> Here you can view/change your account details.</p>
+                      <?php include "account_details.php";?>
+                    </div>
+                    <!-- Password Tab Content -->
+                    <div class="tab-pane fade <?php if ($current_tab == 'password') echo 'show active'; ?>" 
+                          id="password" role="tabpanel">
+                      <h5 class="card-title">Password Info</h5>
+                      <p class="card-text"> Here you can change your password details.</p>
+                      <?php include "password_details.php";?>
+                    </div>
+                    <!-- Account details Tab Content -->
+                    <div class="tab-pane fade <?php if ($current_tab == 'payment_info') echo 'show active'; ?>" 
+                          id="payment_info" role="tabpanel">
+                      <h5 class="card-title">Payemnt Info</h5>
+                      <p class="card-text"> Here you can view/change your payment information.</p>
+                      <?php include "payment_info.php";?>
+                    </div>
+                </div> <!-- end seller tab content -->
+            </div> <!-- end card body -->
+        <?php endif; ?> <!-- end seller dashboard section -->
+
+
+
+
         </div>
     </div>
 </div>
