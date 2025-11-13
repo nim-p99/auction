@@ -16,6 +16,14 @@ GRANT SELECT, UPDATE, INSERT, DELETE
 
 USE auction_site;
 
+CREATE TABLE address (
+  address_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  address_line1 VARCHAR(30) NOT NULL,
+  address_line2 VARCHAR(30),
+  city VARCHAR(30) NOT NULL,
+  postal_code VARCHAR(15) NOT NULL 
+)ENGINE=InnoDB;
+
 CREATE TABLE users (
   user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(30) NOT NULL UNIQUE,
@@ -28,15 +36,6 @@ CREATE TABLE users (
   address_id INT UNSIGNED,
   FOREIGN KEY (address_id) REFERENCES address(address_id)
 )ENGINE=InnoDB;
-
-CREATE TABLE address (
-  address_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  address_line1 VARCHAR(30) NOT NULL,
-  address_line2 VARCHAR(30),
-  city VARCHAR(30) NOT NULL,
-  postal_code VARCHAR(15) NOT NULL 
-)ENGINE=InnoDB;
-
 
 CREATE TABLE admin (
   admin_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
