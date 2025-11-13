@@ -10,7 +10,7 @@
 <?php
 // might not need this depending on if used !isset below
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
-$sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
+$sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
 ?>
 
 
@@ -56,10 +56,13 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
     <div class="col-md-3 pr-0">
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
-        <select class="form-control" id="order_by">
-          <option selected value="pricelow">Price (low to high)</option>
-          <option value="pricehigh">Price (high to low)</option>
-          <option value="date">Soonest expiry</option>
+        <select class="form-control" id="order_by" name="sort">
+          <option selected value="pricelow">Price (low-high)</option>
+          <option value="pricehigh">Price (high-low)</option>
+          <option value="date_asc">Soonest expiry</option>
+          <option value="date_dsc">Latest expiry</option>
+          <option value="buy_now_asc">Buy Now (low-high)</option>
+          <option value="buy_now_dsc">Buy Now (high-low)</option>
         </select>
       </div>
     </div>
@@ -127,15 +130,13 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 <div class="list-container">
 <?php 
 
-  // Construct the final query using the filter category
+  // Construct the final query using the filter category and sort by
   $final_query = "SELECT * from auction AS a 
   JOIN item AS i ON a.item_id = i.item_id
   JOIN category AS c ON c.category_id = i.category_id 
-  WHERE 1=1 "
-  ;
-  $final_query =filter_by_category($connection, $filter_cat,  $final_query);
-
-
+  WHERE 1=1 ";
+  $final_query = filter_by_category($connection, $filter_cat,  $final_query);
+  $final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings

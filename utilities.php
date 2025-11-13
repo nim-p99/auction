@@ -86,28 +86,44 @@ function list_table_items($table) { ?>
 function filter_by_category($connection, $filter_cat,  $final_query) {
 
   if ($filter_cat != 'all') {
-
-      $check_if_parent = "SELECT parent_category FROM category WHERE category_id = $filter_cat";
-      $parent_result = mysqli_query($connection, $check_if_parent);
-      $parent_row = mysqli_fetch_assoc($parent_result); // got row
-        if ($parent_row['parent_category'] === NULL ){ //is a parent category
-          $child_query = "SELECT category_id FROM category WHERE parent_category = $filter_cat";// get all child category ids of that parent
-          $child_result = mysqli_query($connection, $child_query);
-          $child_ids = [];
-          while ($child_row = mysqli_fetch_assoc($child_result)) {
-            $child_ids[] = $child_row['category_id']; // add each child id to array
-          }
-          $child_ids_string = implode(',', $child_ids); // need to convert array to string for sql query, its not possible to pass array directly
-          $final_query .= " AND c.category_id IN ($child_ids_string)";// add to final query 
-        }
+    $check_if_parent = "SELECT parent_category FROM category WHERE category_id = $filter_cat"; // getting parent category of the selected category
+    $parent_result = mysqli_query($connection, $check_if_parent); // run query through db
+    $parent_row = mysqli_fetch_assoc($parent_result); // got row
       
-    
-    
-        else {
-            //is a child category
-          $final_query .= " AND c.category_id = $filter_cat";
-        }
+    if ($parent_row['parent_category'] === NULL ){ //is a parent category if NULL
+      $child_query = "SELECT category_id FROM category WHERE parent_category = $filter_cat";// get all child category ids of that parent
+      $child_result = mysqli_query($connection, $child_query); // run query through db
+      $child_ids = []; // array to hold child ids
+      while ($child_row = mysqli_fetch_assoc($child_result)) {
+        $child_ids[] = $child_row['category_id']; // add each child id to array
       }
+      $child_ids_string = implode(',', $child_ids); // need to convert array to string for sql query, its not possible to pass array directly
+      $final_query .= " AND c.category_id IN ($child_ids_string)";// add to final query 
+    }
+    else {
+        //is a child category
+      $final_query .= " AND c.category_id = $filter_cat";
+    }
+  }
 
     return $final_query;
-} ?>
+} 
+
+function sort_by($sort_by, $final_query) {
+  if ($sort_by == 'pricelow') {
+    $final_query .= " ORDER BY a.current_price ASC";
+  }
+  else if ($sort_by == 'pricehigh') {
+    $final_query .= " ORDER BY a.current_price DESC";
+  }
+  else if ($sort_by == 'date_dsc') {
+    $final_query .= " ORDER BY a.end_date_time DESC";
+  }
+  else if ($sort_by == 'date_asc') {
+    $final_query .= " ORDER BY a.end_date_time ASC";
+  }
+  return $final_query;
+}
+
+
+?>
