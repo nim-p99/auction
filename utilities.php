@@ -122,6 +122,12 @@ function sort_by($sort_by, $final_query) {
   else if ($sort_by == 'date_asc') {
     $final_query .= " ORDER BY a.end_date_time ASC";
   }
+  else if ($sort_by == 'buy_now_asc') {
+    $final_query .= " ORDER BY a.buy_now_price IS NULL, a.buy_now_price ASC";
+  }
+  else if ($sort_by == 'buy_now_dsc') {
+    $final_query .= " ORDER BY a.buy_now_price IS NULL, a.buy_now_price DESC";
+  }
   return $final_query;
 }
 

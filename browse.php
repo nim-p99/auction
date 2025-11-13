@@ -61,7 +61,7 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
           <option value="pricehigh">Price (high-low)</option>
           <option value="date_asc">Soonest expiry</option>
           <option value="date_dsc">Latest expiry</option>
-          <option value="buy_now_asc">Buy Now (low-high)</option>
+          <option value="buy_now_asc">Buy Now (low-high)</option> <!-- need to change so only buy now options come up -->
           <option value="buy_now_dsc">Buy Now (high-low)</option>
         </select>
       </div>
