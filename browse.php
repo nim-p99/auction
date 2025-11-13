@@ -133,7 +133,7 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
   JOIN category AS c ON c.category_id = i.category_id 
   WHERE 1=1 "
   ;
-  $final_query .= filter_by_category($connection, $filter_cat,  $final_query);
+  $final_query =filter_by_category($connection, $filter_cat,  $final_query);
 
 
   $auctions_to_list = mysqli_query($connection, $final_query);
