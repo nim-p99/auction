@@ -83,6 +83,16 @@ function list_table_items($table) { ?>
 <?php } ?>
 
 <?php 
+
+function filter_by_keyword($connection, $keyword, $final_query) {
+  $safe_keyword = mysqli_real_escape_string($connection, $keyword);
+  if (!empty($safe_keyword)) {
+    $final_query .= " AND (i.title LIKE '%$safe_keyword%' OR i.description LIKE '%$safe_keyword%')";
+  }
+  return $final_query;
+}
+
+
 function filter_by_category($connection, $filter_cat,  $final_query) {
 
   if ($filter_cat != 'all') {
@@ -131,5 +141,8 @@ function sort_by($sort_by, $final_query) {
   return $final_query;
 }
 
-
+function count_rows_in_result($result) {
+  $num_rows = mysqli_num_rows($result);
+  return $num_rows;
+}
 ?>

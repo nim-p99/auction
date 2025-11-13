@@ -10,7 +10,8 @@
 <?php
 // might not need this depending on if used !isset below
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
-$sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
+$sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
+$keyword = $_GET['keyword'] ?? '';
 ?>
 
 
@@ -29,7 +30,7 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
               <i class="fa fa-search"></i>
             </span>
           </div>
-          <input type="text" class="form-control border-left-0" id="keyword" placeholder="Search for anything">
+          <input type="text" class="form-control border-left-0" id="keyword" name= "keyword" placeholder="Search for anything" value ="<?php echo htmlspecialchars($keyword); ?>">
         </div>
       </div>
     </div>
@@ -41,7 +42,9 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
           need to come back to this if we want to order by parent category then list its children
           -->
           <option value="all">All Categories</option>
-
+          <!--- --------------------------------------------------------------------------------------
+                      NEED TO CHANGE SO SELECTED CATEGORY REMAINS SELECTED AFTER SUBMITTING FORM
+          ----------------------------------------------------------------------------------------- -->
           <?php
             #category populated from database
             $category_query = "SELECT * from category AS c";
@@ -57,10 +60,10 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
         <select class="form-control" id="order_by" name="sort">
-          <option selected value="pricelow">Price (low-high)</option>
-          <option value="pricehigh">Price (high-low)</option>
           <option value="date_asc">Soonest expiry</option>
           <option value="date_dsc">Latest expiry</option>
+          <option value="pricelow">Price (low-high)</option>
+          <option value="pricehigh">Price (high-low)</option>
           <option value="buy_now_asc">Buy Now (low-high)</option> <!-- need to change so only buy now options come up -->
           <option value="buy_now_dsc">Buy Now (high-low)</option>
         </select>
@@ -109,16 +112,17 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
   /* TODO: Use above values to construct a query. Use this query to 
      retrieve data from the database. (If there is no form data entered,
      decide on appropriate default value/default query to make. */
-  
-  /* For the purposes of pagination, it would also be helpful to know the
-     total number of results that satisfy the above query */
-  // TODO: Calculate me for real
+
  
 ?>
 
 <div class="container mt-5">
 
-<!-- TODO: If result set is empty, print an informative message. Otherwise... -->
+<!--------------------------------------------------------------
+
+!!!!!! TODO: If result set is empty, print an informative message. Otherwise...!!!! 
+
+ ---------------------------------------------------------------------------->
 
 
 <!----------------------------------------------------------------------------
@@ -135,6 +139,7 @@ $sort_by = $_GET['sort'] ?? 'pricelow'; // default to 'date_asc'
   JOIN item AS i ON a.item_id = i.item_id
   JOIN category AS c ON c.category_id = i.category_id 
   WHERE 1=1 ";
+  $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
   $final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
