@@ -6,7 +6,7 @@
 session_start();
 require_once 'database.php';
   $_SESSION['logged_in'] = true;
-  $_SESSION['account_type'] = 'seller';
+  $_SESSION['account_type'] = 'buyer';
   $_SESSION['user_id'] = 'Tony';
   $seller_id = $_SESSION['user_id'];
   $buyer_id = $_SESSION['user_id'];
