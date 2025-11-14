@@ -1,8 +1,9 @@
 
 <?php
 // INCLUDE GLOBAL FILES 
-include_once("header.php")
-require("utilities.php")?>
+include_once("header.php");
+require("utilities.php");
+?>
 
 <div class="container">
 
