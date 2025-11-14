@@ -1,24 +1,31 @@
-<?php include_once("header.php")?>
-<?php require("utilities.php")?>
+
+<?php
+// INCLUDE GLOBAL FILES 
+include_once("header.php")
+require("utilities.php")?>
 
 <div class="container">
 
 
 <h2 class="my-3">Browse LISTINGS</h2>
 
-<!-- Navigation -->
+
 <?php
-// might not need this depending on if used !isset below
+//VARIABLE INITIALISATION
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
 $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 $keyword = $_GET['keyword'] ?? '';
+if (!isset($_GET['page'])) {
+    $curr_page = 1;
+  }
+else {
+    $curr_page = $_GET['page'];
+  }
 ?>
 
 
 <div id="searchSpecs">
-<!-- When this form is submitted, this PHP page is what processes it.
-     Search/sort specs are passed to this page through parameters in the URL
-     (GET method of passing data to a page). -->
+<!-- Search specifications bar -->
 <form method="get" action="browse.php">
   <div class="row">
     <div class="col-md-5 pr-0">
@@ -34,6 +41,9 @@ $keyword = $_GET['keyword'] ?? '';
         </div>
       </div>
     </div>
+    <!-- end keyword search -->
+
+    <!-- Category filter and sort by -->
     <div class="col-md-3 pr-0">
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
@@ -56,6 +66,8 @@ $keyword = $_GET['keyword'] ?? '';
         </select>
       </div>
     </div>
+    <!-- end category filter -->
+     <!-- Sort by -->
     <div class="col-md-3 pr-0">
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
@@ -73,48 +85,13 @@ $keyword = $_GET['keyword'] ?? '';
       <button type="submit" class="btn btn-primary">Search</button>
     </div>
   </div>
+  <!-- end sort by -->
 </form>
-</div> <!-- end search specs bar -->
+</div> 
+<!-- end search specifications bar-->
 
 
 </div>
-
-<?php
-  // // Retrieve these from the URL
-  // //if (!isset($_GET['keyword'])) {
-  //   // TODO: Define behavior if a keyword has not been specified.
-  // //}
-  // //else {
-  //   //$keyword = $_GET['keyword'];
-  // }
-
-  // if (!isset($_GET['cat'])) {
-  //   // TODO: Define behavior if a category has not been specified.
-  // }
-  // else {
-  //   $category = $_GET['cat'];
-  // }
-  
-  // if (!isset($_GET['order_by'])) {
-  //   // TODO: Define behavior if an order_by value has not been specified.
-  // }
-  // else {
-  //   $ordering = $_GET['order_by'];
-  // }
-  
-  if (!isset($_GET['page'])) {
-    $curr_page = 1;
-  }
-  else {
-    $curr_page = $_GET['page'];
-  }
-
-  /* TODO: Use above values to construct a query. Use this query to 
-     retrieve data from the database. (If there is no form data entered,
-     decide on appropriate default value/default query to make. */
-
- 
-?>
 
 <div class="container mt-5">
 
@@ -147,7 +124,8 @@ $keyword = $_GET['keyword'] ?? '';
   // Use the function from utilities.php to print the listings
   list_table_items($auctions_to_list);
 
-  // For pagination calculations
+  // For pagination & pagnation calculations
+  
   $num_results = mysqli_num_rows($auctions_to_list);
   $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
