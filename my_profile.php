@@ -115,7 +115,7 @@ $seller_id = 'Tony';
                           id="viewed" role="tabpanel">
                       <h5 class="card-title">Recently viewed</h5>
                       <p class="card-text"> Here you can view all items you recently viewed</p>
-                      <?php include "recentlyviewedtab.php";?>
+                      <?php include "recentlyviewed.php";?>
                     </div>
                     <!-- Watchlist tab content -->
                     <div class="tab-pane fade <?php if ($current_tab == 'watchlist') echo 'show active'; ?>" 
