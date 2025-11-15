@@ -14,7 +14,7 @@ require("utilities.php");
 <?php
 //VARIABLE INITIALISATION
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
-$sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
+$sort_by = $_GET['sort'] ?? 'hot'; //default to items that have lots of bids'
 $keyword = $_GET['keyword'] ?? '';
 if (!isset($_GET['page'])) {
     $curr_page = 1;
@@ -73,11 +73,12 @@ else {
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
         <select class="form-control" id="order_by" name="sort">
+          <option value="hot">Hot items</option>
           <option value="date_asc">Soonest expiry</option>
           <option value="date_dsc">Latest expiry</option>
           <option value="pricelow">Price (low-high)</option>
           <option value="pricehigh">Price (high-low)</option>
-          <option value="buy_now_asc">Buy Now (low-high)</option> <!-- need to change so only buy now options come up -->
+          <option value="buy_now_asc">Buy Now (low-high)</option> 
           <option value="buy_now_dsc">Buy Now (high-low)</option>
         </select>
       </div>

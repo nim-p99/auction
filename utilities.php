@@ -51,12 +51,17 @@ function print_listing_li($item_id, $title, $desc, $price, $num_bids, $end_time,
     $time_to_end = date_diff($now, $end_time);
     $time_remaining = display_time_remaining($time_to_end) . ' remaining';
   }
+  $buy_now_str ="";
   
+
+  if (!is_null($buy_now_price)){
+    $buy_now_str ='Buy Now: £' . $buy_now_price; 
+  }
   // Print HTML
   echo('
     <li class="list-group-item d-flex justify-content-between">
     <div class="p-2 mr-5"><h5><a href="listing.php?item_id=' . $item_id . '">' . $title . '</a></h5>' . $desc_shortened . '</div>
-    <div class="text-center text-nowrap"><span style="font-size: 1.5em">£' . number_format($price, 2) . '</span><br/>' . $num_bids . $bid . '<br/>' . $time_remaining . '<br/>Buy Now: £' . $buy_now_price . '</div>
+    <div class="text-center text-nowrap"><span style="font-size: 1.5em">£' . number_format($price, 2) . '</span><br/>' . $num_bids . $bid . '<br/>' . $time_remaining . '<br/>' . $buy_now_str . '</div>
   </li>'
   );
 }
@@ -138,6 +143,9 @@ function sort_by($sort_by, $final_query) {
   }
   else if ($sort_by == 'buy_now_dsc') {
     $final_query .= "AND a.buy_now_price IS NOT NULL ORDER BY (a.end_date_time > NOW()) DESC,a.buy_now_price DESC";
+  }
+  else if ($sort_by == 'hot') {
+    $final_query .= "ORDER BY (a.end_date_time > NOW()) DESC, a.num_bids DESC";
   }
   return $final_query;
 }
