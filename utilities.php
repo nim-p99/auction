@@ -132,27 +132,27 @@ function filter_by_category($connection, $filter_cat,  $final_query) {
 } 
 
 function sort_by($sort_by, $final_query) {
-  $core_order = "ORDER BY (a.end_date_time > NOW()) DESC, (a.start_date_time <= NOW()) DESC"; // orders by  : Live auctions > auctions in the future > past auctions
+  $core_order = " (a.end_date_time > NOW()) DESC, (a.start_date_time <= NOW()) DESC"; // orders by  : Live auctions > auctions in the future > past auctions
   if ($sort_by == 'pricelow') {
-    $final_query .= "$core_order,a.current_price ASC";
+    $final_query .= " ORDER BY $core_order, a.current_price ASC";
   }
   else if ($sort_by == 'pricehigh') {
-    $final_query .= "$core_order, a.current_price DESC";
+    $final_query .= " ORDER BY $core_order, a.current_price DESC";
   }
   else if ($sort_by == 'date_dsc') {
-    $final_query .= "$core_order, a.end_date_time DESC";
+    $final_query .= " ORDER BY $core_order, a.end_date_time DESC";
   }
   else if ($sort_by == 'date_asc') {
-    $final_query .= "$core_order, a.end_date_time ASC";
+    $final_query .= "  ORDER BY $core_order, a.end_date_time ASC";
   }
   else if ($sort_by == 'buy_now_asc') {
-    $final_query .= "AND a.buy_now_price IS NOT NULL $core_order,a.buy_now_price ASC";
+    $final_query .= " AND a.buy_now_price IS NOT NULL ORDER BY $core_order,a.buy_now_price ASC";
   }
   else if ($sort_by == 'buy_now_dsc') {
-    $final_query .= "AND a.buy_now_price IS NOT NULL $$core_order,a.buy_now_price DESC";
+    $final_query .= " AND a.buy_now_price IS NOT NULL ORDER BY $core_order,a.buy_now_price DESC";
   }
   else if ($sort_by == 'hot') {
-    $final_query .= "$core_order, a.num_bids DESC";
+    $final_query .= " ORDER BY $core_order, a.num_bids DESC";
   }
   return $final_query;
 }
