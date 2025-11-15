@@ -127,7 +127,7 @@ else {
 
   // For pagination & pagnation calculations
   
-  $num_results = mysqli_num_rows($auctions_to_list);
+  $num_results = mysqli_num_rows($auctions_to_list); //96;
   $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
