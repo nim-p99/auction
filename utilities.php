@@ -23,7 +23,7 @@ function display_time_remaining($interval) {
 
 // print_listing_li:
 // This function prints an HTML <li> element containing an auction listing
-function print_listing_li($item_id, $title, $desc, $price, $num_bids, $end_time, $buy_now_price)
+function print_listing_li($item_id, $title, $desc, $price, $num_bids,$start_time, $end_time, $buy_now_price)
 {
   // Truncate long descriptions
   if (strlen($desc) > 250) {
@@ -46,17 +46,22 @@ function print_listing_li($item_id, $title, $desc, $price, $num_bids, $end_time,
   if ($now > $end_time) {
     $time_remaining = 'This auction has ended';
   }
-  else {
+  elseif ($now < $start_time) {
+    // Get interval:
+    $time_to_start = date_diff($now, $start_time);
+    $time_remaining = display_time_remaining($time_to_start) . ' until auction starts';
+  }
+    else {
     // Get interval:
     $time_to_end = date_diff($now, $end_time);
     $time_remaining = display_time_remaining($time_to_end) . ' remaining';
   }
-  $buy_now_str ="";
   
-
+  $buy_now_str ="";
   if (!is_null($buy_now_price)){
     $buy_now_str ='Buy Now: £' . $buy_now_price; 
   }
+  
   // Print HTML
   echo('
     <li class="list-group-item d-flex justify-content-between">
@@ -78,10 +83,11 @@ function list_table_items($table) { ?>
         $current_price = $row['current_price']; 
         $num_bids =$row['num_bids'];
         $buy_now_price =$row['buy_now_price'];
+        $start_date= new DateTime($row['start_date_time']);
 
         //using the print listing function from utilities.php
         //need to update so if starting price > current price = print starting price not current price
-        print_listing_li($item_id, $title, $description, $current_price, $num_bids, $end_date, $buy_now_price) ?>
+        print_listing_li($item_id, $title, $description, $current_price, $num_bids, $start_date, $end_date, $buy_now_price) ?>
       
       </div>
       
@@ -126,26 +132,27 @@ function filter_by_category($connection, $filter_cat,  $final_query) {
 } 
 
 function sort_by($sort_by, $final_query) {
+  $core_order = "ORDER BY (a.end_date_time > NOW()) DESC, (a.start_date_time <= NOW()) DESC"; // orders by  : Live auctions > auctions in the future > past auctions
   if ($sort_by == 'pricelow') {
-    $final_query .= "ORDER BY (a.end_date_time > NOW()) DESC, a.current_price ASC";
+    $final_query .= "$core_order,a.current_price ASC";
   }
   else if ($sort_by == 'pricehigh') {
-    $final_query .= " ORDER BY (a.end_date_time > NOW()) DESC, a.current_price DESC";
+    $final_query .= "$core_order, a.current_price DESC";
   }
   else if ($sort_by == 'date_dsc') {
-    $final_query .= "ORDER BY (a.end_date_time > NOW()) DESC, a.end_date_time DESC";
+    $final_query .= "$core_order, a.end_date_time DESC";
   }
   else if ($sort_by == 'date_asc') {
-    $final_query .= "ORDER BY (a.end_date_time > NOW()) DESC, a.end_date_time ASC";
+    $final_query .= "$core_order, a.end_date_time ASC";
   }
   else if ($sort_by == 'buy_now_asc') {
-    $final_query .= "AND a.buy_now_price IS NOT NULL ORDER BY (a.end_date_time > NOW()) DESC,a.buy_now_price ASC";
+    $final_query .= "AND a.buy_now_price IS NOT NULL $core_order,a.buy_now_price ASC";
   }
   else if ($sort_by == 'buy_now_dsc') {
-    $final_query .= "AND a.buy_now_price IS NOT NULL ORDER BY (a.end_date_time > NOW()) DESC,a.buy_now_price DESC";
+    $final_query .= "AND a.buy_now_price IS NOT NULL $$core_order,a.buy_now_price DESC";
   }
   else if ($sort_by == 'hot') {
-    $final_query .= "ORDER BY (a.end_date_time > NOW()) DESC, a.num_bids DESC";
+    $final_query .= "$core_order, a.num_bids DESC";
   }
   return $final_query;
 }
