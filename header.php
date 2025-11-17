@@ -5,12 +5,65 @@
   // database query.
 session_start();
 require_once 'database.php';
+
+
+// user not logged in - session defaults 
+if (!isset($_SESSION['logged_in'])) {
   $_SESSION['logged_in'] = false;
-  $_SESSION['account_type'] = 'buyer';
-  $_SESSION['user_id'] = 'Tony';
-  $seller_id = $_SESSION['user_id'];
-  $buyer_id = $_SESSION['user_id'];
-  $username = $_SESSION['user_id']
+  $_SESSION['user_id'] = null;
+  $_SESSION['account_type'] = null;
+}
+
+// user logged in - determine account type
+if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
+
+  $user_id = $_SESSION['user_id'];
+
+  // default role = buyer 
+  $role = 'buyer';
+
+  // check if seller 
+  $query = $connection->prepare("SELECT seller_id FROM seller WHERE user_id = ?");
+  $query->bind_param("i", $user_id);
+  $query->execute();
+  $query->store_result();
+
+  // upgrade to seller
+  if ($query->num_rows > 0) {
+    $role = 'seller';
+    $query->bind_result($seller_id);
+    $query->fetch(); 
+  }
+  $query->close();
+
+  // check if admin
+  $query = $connection->prepare("SELECT admin_id FROM admin WHERE user_id = ?");
+  $query->bind_param("i", $user_id);
+  $query->execute();
+  $query->store_result();
+
+  // upgrade to admin 
+  if ($query->num_rows > 0) {
+    $role = 'admin';
+  }
+  $query->close();
+  
+
+  $_SESSION['account_type'] = $role;
+  echo "You are logged in as: " . $_SESSION['account_type'];
+
+}
+
+# SETTING DEFAULT SESSION VARIABLES 
+
+#$_SESSION['logged_in'] = false;
+#$_SESSION['account_type'] = 'buyer';
+#$_SESSION['user_id'] = 'Tony';
+$seller_id = $_SESSION['user_id'];
+$buyer_id = $_SESSION['user_id'];
+$username = $_SESSION['user_id']
+
+
 ?>
 
 
@@ -116,11 +169,12 @@ require_once 'database.php';
         <form method="POST" action="login_result.php">
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="text" class="form-control" id="email" placeholder="Email">
+            <input name="email" type="text" class="form-control" id="email" placeholder="Email" required>
+
           </div>
           <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Password">
+            <input name="password" type="password" class="form-control" id="password" placeholder="Password" required>
           </div>
           <button type="submit" class="btn btn-primary form-control">Sign in</button>
         </form>
