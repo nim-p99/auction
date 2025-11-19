@@ -2,42 +2,52 @@
 <?php require("utilities.php")?>
 
 <?php
-  $seller_id = $_GET['seller_id'];
-
-
-// TODO: GET seller_id from url --> run query to obtain
-// seller info (eg username, user_id). Set variables below
-// for ease. TO REMOVE.
-session_start();
-$_SESSION['user_id'] = "nim";
-
-?>
-
-
-<?php echo("<div class='container'><h2 class='my-3'>" . $seller_id . "'s Seller Profile</h2></div>");?>
-
-
-<ul class="list-group">
-<li>
-<?php 
-echo('<div class="p-2 mr-5"><h5><a href="mylistings.php?seller_id=' . $seller_id . '">Listings</a></h5></div>');
-echo('<div class="p-2 mr-5"><h5><a href="reviews.php?seller_id=' . $seller_id . '">Seller reviews</a></h5></div>');
-?>
-</li>
-</ul>
-
-<?php
-// TODO: Check users's credentials (cookie/session).
-// TODO: If 'seller' != 'user': Insert message seller button.
-
-if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true && $_SESSION['user_id'] != $seller_id) {
-  echo '<div class="p-2 mr-5"><h5><a href="sendmessage.php">Message seller</a></h5></div>';
+// Ensure user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: login.php");
+    exit();
+}
+// Ensure user is a seller 
+if ($_SESSION['account_type'] == 'buyer'){
+  echo "You do not have a seller account. Create an auction to become a seller";
+  # echo "<meta http-equiv='refresh' content='2;url=browse.php'>";
+  echo "<p>To go back, <a href='browse.php'>click here</a></p>";
+  #header("Location: browse.php");
+  #exit();
 }
 
+// Define valid tabs for the seller dashboard
+$tabs = [
+  'mybids.php' => 'My Bids',
+  'mylistings.php' => 'My Listings'
+];
 
+// Get the tab from URL or default to 'mylistings'
+$current_tab = $_GET['tab'] ?? 'mylistings.php';
 
-// $_SESSION['logged_in'] = true;
-// $_SESSION['username'] = "test";
+// If invalid, fall back to default
+if (!array_key_exists($current_tab, $tabs)) {
+    $current_tab = 'mylistings.php';
+}
+
+$tab_heading = $tabs[$current_tab];
 ?>
 
-<?php include_once("footer.php")?>
+<div class="container mt-4 mb-4">
+  <!-- Tab heading -->
+  <h2 class="mb-3"><?php echo htmlspecialchars($tab_heading); ?></h2>
+  <!-- Load tab content -->
+  <div class="tab-content p-3 border rounded bg-light">
+    <?php
+      // Build the path safely
+      if (file_exists($current_tab) && $_SESSION['account_type'] != 'buyer') {
+        include $current_tab;
+      } else {
+        echo "<p>Sorry, that tab could not be loaded.</p>";
+      }
+    ?>
+  </div>
+</div>
+
+<?php include_once "footer.php"; ?>
+

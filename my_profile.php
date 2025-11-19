@@ -31,7 +31,7 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 
 
 
-$seller_id = 'Tony';
+$seller_id = $_SESSION['seller_id']
 ?>
 
 <div class="container mt-4 mb-4"> <!-- mt and mb are margin top and bottom -->
@@ -115,7 +115,7 @@ $seller_id = 'Tony';
                           id="viewed" role="tabpanel">
                       <h5 class="card-title">Recently viewed</h5>
                       <p class="card-text"> Here you can view all items you recently viewed</p>
-                      <?php include "recentlyviewedtab.php";?>
+                      <?php include "recentlyviewed.php";?>
                     </div>
                     <!-- Watchlist tab content -->
                     <div class="tab-pane fade <?php if ($current_tab == 'watchlist') echo 'show active'; ?>" 

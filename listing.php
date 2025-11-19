@@ -2,28 +2,83 @@
 <?php require("utilities.php")?>
 
 <?php
+ 
+  if (isset($_SESSION['error_message'])) {
+    echo "<div class='alert alert-danger'>" . $_SESSION['error_message'] . "</div>";
+    unset($_SESSION['error_message']);
+  }
+
+  if (isset($_SESSION['success_message'])) {
+    echo "<div class='alert alert-success'>" . $_SESSION['success_message'] . "</div>";
+    unset($_SESSION['success_message']);
+  }
+
+
   // Get info from the URL:
   $item_id = $_GET['item_id'];
+  $seller_id = null;
+  $auction_id = null;
 
 // TODO: Use item_id to make a query to the database.
 // extract seller_id for seller profile, remove example below
-$seller_id = "spiderman";
+  $query = $connection->prepare("
+    SELECT seller_id, auction_id
+    FROM auction
+    WHERE item_id = ?");
+  $query->bind_param("i", $item_id);
+  $query->execute();
+  $query->bind_result($seller_id, $auction_id);
+
+  if (!$query->fetch()) {
+    // no row found --> redirect to error page 
+    $query->close();
+    header("Location: /error.php?error_id=1");
+    exit();
+  }
+  $query->close();
+
+  # can fine tune this query - dont need all rows from auction 
+  $auction_sql = "SELECT a.*, i.title, i.description 
+        FROM auction a
+        JOIN item i ON a.item_id = i.item_id
+        WHERE a.auction_id = ?";
+  $query = $connection->prepare($auction_sql);
+  $query->bind_param("i", $auction_id);
+  $query->execute();
+  $auction = $query->get_result()->fetch_assoc();
 
 
-  // DELETEME: For now, using placeholder data.
-  $title = "Placeholder title";
-  $description = "Description blah blah blah";
-  $current_price = 30.50;
-  $num_bids = 1;
-  $end_time = new DateTime('2026-11-02T00:00:00');
+  // get highest bid for auction 
+  $highest_bid_sql = "
+    SELECT MAX(amount) AS highest_bid
+    FROM bids
+    WHERE auction_id = ?";
 
+  $query = $connection->prepare($highest_bid_sql);
+  $query->bind_param("i", $auction_id);
+  $query->execute();
+  $result = $query->get_result();
+  $row = $result->fetch_assoc();
+
+  $highest_bid = $row["highest_bid"];
+  // highest bid not empty then current price becomes highest bid
+  if ($highest_bid == null) {
+    $highest_bid = 0;
+  }
+
+  // calculates / converts time
+  $get_end_time = $auction["end_date_time"];
+  $end_time = new DateTime($get_end_time);
+  $now = new DateTime();
+  ?>
+
+
+<?php
   // TODO: Note: Auctions that have ended may pull a different set of data,
   //       like whether the auction ended in a sale or was cancelled due
   //       to lack of high-enough bids. Or maybe not.
   
   // Calculate time to auction end:
-  $now = new DateTime();
-  
   if ($now < $end_time) {
     $time_to_end = date_diff($now, $end_time);
     $time_remaining = ' (in ' . display_time_remaining($time_to_end) . ')';
@@ -41,10 +96,14 @@ $seller_id = "spiderman";
 
 <div class="row"> <!-- Row #1 with auction title + watch button -->
   <div class="col-sm-8"> <!-- Left col -->
-    <h2 class="my-3"><?php echo($title); ?></h2>
+    <h2 class="my-3"><?php echo($auction['title']); ?></h2>
+  </div>
+  <div class="col-sm-8"> 
+    <p class="my-3"><?php echo($auction['description']); ?></p>
   </div>
   <div class="col-sm-4 align-self-center"> <!-- Right col -->
 <?php
+  echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
   if ($now < $end_time):
@@ -60,38 +119,32 @@ $seller_id = "spiderman";
   </div>
 </div>
 
-<div class="row"> <!-- Row #2 with seller profile button -->
-  <div class="col-sm-4">
-    <?php echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');?>
-  </div>
-</div>
+
 
 <div class="row"> <!-- Row #3 with auction description + bidding info -->
-  <div class="col-sm-8"> <!-- Left col with item info -->
-
-    <div class="itemDescription">
-    <?php echo($description); ?>
-    </div>
-
-  </div>
+  <div class="col-sm-8"> <!-- blank left col--></div>
 
   <div class="col-sm-4"> <!-- Right col with bidding info -->
-
-    <p>
+    <p><strong>Buy Now Price:</strong> £<?php echo number_format($auction["buy_now_price"], 2); ?></p>
+    <!-- check if auction ended -->
+    <p><strong>
 <?php if ($now > $end_time): ?>
      This auction ended <?php echo(date_format($end_time, 'j M H:i')) ?>
      <!-- TODO: Print the result of the auction here? -->
 <?php else: ?>
      Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
-    <p class="lead">Current bid: £<?php echo(number_format($current_price, 2)) ?></p>
+    <p class="lead">Current bid: £<?php echo(number_format($highest_bid, 2)) ?></p>
 
     <!-- Bidding form -->
     <form method="POST" action="place_bid.php">
+      <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
+      <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
+      <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
       <div class="input-group">
         <div class="input-group-prepend">
           <span class="input-group-text">£</span>
         </div>
-	    <input type="number" class="form-control" id="bid">
+	    <input type="number" class="form-control" id="bid" name="bid" step="0.1" required>
       </div>
       <button type="submit" class="btn btn-primary form-control">Place bid</button>
     </form>
