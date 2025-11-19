@@ -12,10 +12,15 @@ if (!isset($_SESSION['logged_in'])) {
   $_SESSION['logged_in'] = false;
   $_SESSION['user_id'] = null;
   $_SESSION['account_type'] = null;
+  $_SESSION['buyer_id'] = null;
+  $_SESSION['seller_id'] = null;
+  $_SESSION['admin_id'] = null;
 }
 
 $username = null;
+$buyer_id = null;
 $seller_id = null;
+$admin_id = null;
 // user logged in - determine account type
 if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
@@ -32,6 +37,18 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
   // default role = buyer 
   $role = 'buyer';
+  $query = $connection->prepare("SELECT buyer_id FROM buyer WHERE user_id = ?");
+  $query->bind_param("i", $user_id);
+  $query->execute();
+  $query->store_result();
+
+  if ($query->num_rows > 0) {
+    $query->bind_result($buyer_id);
+    $query->fetch();
+    $_SESSION['buyer_id'] = $buyer_id;
+  }
+  $query->close();
+
 
   // check if seller 
   $query = $connection->prepare("SELECT seller_id FROM seller WHERE user_id = ?");
@@ -43,7 +60,8 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
   if ($query->num_rows > 0) {
     $role = 'seller';
     $query->bind_result($seller_id);
-    $query->fetch(); 
+    $query->fetch();
+    $_SESSION['seller_id'] = $seller_id;
   }
   $query->close();
 
@@ -56,6 +74,10 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
   // upgrade to admin 
   if ($query->num_rows > 0) {
     $role = 'admin';
+    $query->bind_result($admin_id);
+    $query->fetch();
+    $_SESSION['admin_id'] = $admin_id;
+
   }
   $query->close();
   
@@ -71,7 +93,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 #$_SESSION['account_type'] = 'buyer';
 #$_SESSION['user_id'] = 'Tony';
 #$seller_id = $_SESSION['user_id'];
-$buyer_id = $_SESSION['user_id'];
+
 #$username = $_SESSION['user_id']
 
 
@@ -154,8 +176,9 @@ $buyer_id = $_SESSION['user_id'];
   }
   if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'seller') {
   echo('
-	<li class="nav-item mx-1">
-      <a class="nav-link" href="mylistings.php?seller_id=' . $seller_id . '">My Listings</a>
+	
+  <li class="nav-item mx-1">
+      <a class="nav-link" href="seller.php?tab=mylistings.php">My Listings</a>
     </li>
 	<li class="nav-item ml-3">
       <a class="nav-link btn border-light" href="create_auction.php">+ Create auction</a>
