@@ -9,7 +9,7 @@
   // This can be started after browse.php is working with a database.
   // Feel free to extract out useful functions from browse.php and put them in
   // the shared "utilities.php" where they can be shared by multiple files.
-  
+  //TODO: check seller_id and extract username. 
   $seller_id = $_GET['seller_id'];
 
   echo '<h2 class="my-3">' . $seller_id . "'s listings</h2>";

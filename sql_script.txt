@@ -18,22 +18,22 @@ USE auction_site;
 
 CREATE TABLE address (
   address_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  address_line1 VARCHAR(30) NOT NULL,
-  address_line2 VARCHAR(30),
+  address_line1 VARCHAR(50) NOT NULL,
+  address_line2 VARCHAR(50),
   city VARCHAR(30) NOT NULL,
   postal_code VARCHAR(15) NOT NULL 
 )ENGINE=InnoDB;
 
 CREATE TABLE users (
   user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(30) NOT NULL UNIQUE,
-  password VARCHAR(30) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
   username VARCHAR(30) NOT NULL UNIQUE,
   acc_active BOOLEAN NOT NULL DEFAULT TRUE,
   first_name VARCHAR(30) NOT NULL,
   family_name VARCHAR(30) NOT NULL,
-  phone_number VARCHAR(15),
-  address_id INT UNSIGNED,
+  phone_number VARCHAR(15) DEFAULT NULL,
+  address_id INT UNSIGNED DEFAULT NULL,
   FOREIGN KEY (address_id) REFERENCES address(address_id)
 )ENGINE=InnoDB;
 
@@ -134,12 +134,27 @@ CREATE TABLE transaction (
 
 USE auction_site;
 
-INSERT INTO users (email, password, username, acc_active, first_name, family_name) VALUES
-('admin@auction.com', 'hashedpass1', 'AdminUser', TRUE, 'Adam', 'Smith'),  -- user_id 1
-('seller1@shop.com', 'hashedpass2', 'ProSeller', TRUE, 'Nim', 'Johnson'),  -- user_id 2
-('seller2@shop.com', 'hashedpass3', 'ArtisanGoods', TRUE, 'Armando', 'Brown'), -- user_id 3
-('buyer1@mail.com', 'hashedpass4', 'HighBidder', TRUE, 'Luke', 'Prince'), -- user_id 4
-('buyer2@mail.com', 'hashedpass5', 'BargainHunter', TRUE, 'Francesca', 'Adams'); -- user_id 5
+
+-- Sample addresses -----------------------------------------------
+
+INSERT INTO address (address_line1, address_line2, city, postal_code) VALUES
+('123 Main St', NULL, 'London', 'E1 1AA'),
+('456 Oak Rd', 'Flat 2B', 'Manchester', 'M2 2BB'),
+('789 Pine Ave', NULL, 'Birmingham', 'B3 3CC');
+
+
+-- Sample users (hashed passwords, original password in comment) -----
+
+INSERT INTO users (email, password, username, acc_active, first_name, family_name, phone_number, address_id) VALUES
+('admin@auction.com', '$2y$10$xn7.XhjX6nwS8FgM4SKyBOoTHJls4qUr3B/QBeezkz3..ZVyjQjc.', 'AdminUser', TRUE, 'Adam', 'Smith', '07123456789', 1),  -- password: admin123
+('seller1@shop.com', '$2y$10$St7f0E.UlzXPfyPl1NXL6.Ia49fRjLwjHr1COU0ieqKKqWKjpNLCC', 'ProSeller', TRUE, 'Nim', 'Johnson', NULL, NULL), -- password: SellerPass1
+('seller2@shop.com', '$2y$10$D8BcCDpFn3GLplPaaxwsbeackuvsKmIGHb4xS4Zefpl10AsK3qpkO', 'ArtisanGoods', TRUE, 'Armando', 'Brown', '07234567890', 2), -- password: ArtGoods22
+('buyer1@mail.com', '$2y$10$.HupXbqORBStQcmdguxErut5CGWsy3GpzfWs1OgE2FSz5hMYuBXc.', 'HighBidder', TRUE, 'Luke', 'Prince', NULL, NULL), -- password: BuyerPass1
+('buyer2@mail.com', '$2y$10$BC1SABu52MGtTlLYWvr1f.5cacRJ3YFnXRZEmjzIZlp9tuM7sKXzq', 'BargainHunter', TRUE, 'Francesca', 'Adams', '07345678901', 3); -- password: Bargain22
+
+
+-- Sample admin, buyer, seller -------------------------------
+
 
 INSERT INTO admin (user_id) VALUES (1);
 
@@ -150,6 +165,8 @@ INSERT INTO seller (user_id, avg_seller_rating) VALUES
 INSERT INTO buyer (user_id, avg_buyer_rating) VALUES
 (4, 5.00),
 (5, 4.50);
+
+-- Categories ----------------------------------------------------
 
 INSERT INTO category (category_id, category_name, parent_category) VALUES
 (1, 'Electronics', NULL),
