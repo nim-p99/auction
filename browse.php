@@ -1,5 +1,7 @@
 
 <?php
+ini_set('display_errors', 1);
+// error_reporting('E_ALL');
 // INCLUDE GLOBAL FILES 
 include_once("header.php");
 require("utilities.php");

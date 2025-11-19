@@ -36,7 +36,7 @@ $seller_id = 'Tony';
 
 <div class="container mt-4 mb-4"> <!-- mt and mb are margin top and bottom -->
     <h2 class= "my-3">My Profile </h2> 
-    <p class="lead"> Welcome back, <?php echo htmlspecialchars($username); ?>! </p>
+    <p class="lead"> Welcome back, <?php echo htmlspecialchars($_SESSION['first_name']); ?>! </p>
 
     <div class = "row">
 

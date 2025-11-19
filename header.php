@@ -1,16 +1,14 @@
 <?php
-  // FIXME: At the moment, I've allowed these values to be set manually.
-  // But eventually, with a database, these should be set automatically
-  // ONLY after the user's login credentials have been verified via a 
-  // database query.
-session_start();
-require_once 'database.php';
-  $_SESSION['logged_in'] = true;
-  $_SESSION['account_type'] = 'seller';
-  $_SESSION['user_id'] = 'Tony';
-  $seller_id = $_SESSION['user_id'];
-  $buyer_id = $_SESSION['user_id'];
-  $username = $_SESSION['user_id']
+  // Start session to maintain user login state
+  session_start();
+  require_once 'database.php';
+
+  // Set seller_id and buyer_id from session if user is logged in
+  if (isset($_SESSION['user_id'])) {
+    $seller_id = $_SESSION['user_id'];
+    $buyer_id = $_SESSION['user_id'];
+    $username = $_SESSION['username'];
+  }
 ?>
 
 
@@ -26,10 +24,15 @@ require_once 'database.php';
 
   <!-- Custom CSS file -->
   <link rel="stylesheet" href="css/custom.css">
-  
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+
   <!-- can use $pageTitle variable - which we set for each page -->
   <!-- $pageTitle = "Index" -->
-  <!-- include header.php --> 
+  <!-- include header.php -->
   <title>[My Auction Site] <!--CHANGEME!--></title>
 </head>
 
@@ -116,11 +119,11 @@ require_once 'database.php';
         <form method="POST" action="login_result.php">
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="text" class="form-control" id="email" placeholder="Email">
+            <input type="text" class="form-control" id="email" name="email" placeholder="Email">
           </div>
           <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Password">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
           </div>
           <button type="submit" class="btn btn-primary form-control">Sign in</button>
         </form>
