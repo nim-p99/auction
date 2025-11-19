@@ -102,4 +102,10 @@ $query->close();
 
 // 10. success message
 echo "Registration successful! <a href='login.php'>Login here</a>";
+
+// 11. email confirmation 
+$capitalisedFirstName = ucfirst($firstName);
+mail($email,"Account Created", "Hi $capitalisedFirstName! 
+This email is to confirm the creation your of BUYER account. 
+Thank you for registering!", "From: the auction_site");
 ?>
