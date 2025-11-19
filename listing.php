@@ -138,6 +138,8 @@
     <!-- Bidding form -->
     <form method="POST" action="place_bid.php">
       <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
+      <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
+      <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
       <div class="input-group">
         <div class="input-group-prepend">
           <span class="input-group-text">£</span>
