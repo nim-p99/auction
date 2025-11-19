@@ -4,12 +4,22 @@
 <?php
   // Get info from the URL:
   $item_id = $_GET['item_id'];
+  $seller_id = null;
 
 // TODO: Use item_id to make a query to the database.
 // extract seller_id for seller profile, remove example below
-$seller_id = "spiderman";
+  $query = $connection->prepare("
+    SELECT seller_id
+    FROM auction
+    WHERE item_id = ?");
+  $query->bind_param("i", $item_id);
+  $query->execute();
+  $query->bind_result($seller_id);
+  $query->fetch();
+  $query->close();
 
 
+  
   // DELETEME: For now, using placeholder data.
   $title = "Placeholder title";
   $description = "Description blah blah blah";
@@ -25,7 +35,7 @@ $seller_id = "spiderman";
   $now = new DateTime();
   
   if ($now < $end_time) {
-    $time_to_end = date_diff($now, $end_time);
+      $time_to_end = date_diff($now, $end_time);
     $time_remaining = ' (in ' . display_time_remaining($time_to_end) . ')';
   }
   

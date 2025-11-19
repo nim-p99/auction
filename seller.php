@@ -7,6 +7,14 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header("Location: login.php");
     exit();
 }
+// Ensure user is a seller 
+if ($_SESSION['account_type'] == 'buyer'){
+  echo "You do not have a seller account. Create an auction to become a seller";
+  # echo "<meta http-equiv='refresh' content='2;url=browse.php'>";
+  echo "<p>To go back, <a href='browse.php'>click here</a></p>";
+  #header("Location: browse.php");
+  #exit();
+}
 
 // Define valid tabs for the seller dashboard
 $tabs = [
@@ -32,7 +40,7 @@ $tab_heading = $tabs[$current_tab];
   <div class="tab-content p-3 border rounded bg-light">
     <?php
       // Build the path safely
-      if (file_exists($current_tab)) {
+      if (file_exists($current_tab) && $_SESSION['account_type'] != 'buyer') {
         include $current_tab;
       } else {
         echo "<p>Sorry, that tab could not be loaded.</p>";
