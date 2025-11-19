@@ -25,6 +25,7 @@
   // TODO: Check user's credentials (cookie/session).
   
   // TODO: Perform a query to pull up their auctions.
+
   
   // TODO: Loop through results and print them out as list items.
   
