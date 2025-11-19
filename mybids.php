@@ -206,6 +206,7 @@
   // TODO: Perform a query to pull up the auctions they've bidded on.
   
   // TODO: Loop through results and print them out as list items.
-  
+
+
 ?>
 
