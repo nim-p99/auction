@@ -14,10 +14,21 @@ if (!isset($_SESSION['logged_in'])) {
   $_SESSION['account_type'] = null;
 }
 
+$username = null;
+$seller_id = null;
 // user logged in - determine account type
 if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
   $user_id = $_SESSION['user_id'];
+
+  // fetch username from db 
+  $query = $connection->prepare("SELECT username FROM users WHERE user_id = ?");
+  $query->bind_param("i", $_SESSION['user_id']);
+  $query->execute();
+  $query->bind_result($username);
+  $query->fetch();
+  $query->close();
+  $_SESSION['username'] = $username;
 
   // default role = buyer 
   $role = 'buyer';
@@ -59,9 +70,9 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 #$_SESSION['logged_in'] = false;
 #$_SESSION['account_type'] = 'buyer';
 #$_SESSION['user_id'] = 'Tony';
-$seller_id = $_SESSION['user_id'];
+#$seller_id = $_SESSION['user_id'];
 $buyer_id = $_SESSION['user_id'];
-$username = $_SESSION['user_id']
+#$username = $_SESSION['user_id']
 
 
 ?>
