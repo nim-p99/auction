@@ -1,5 +1,5 @@
 <?php
-$to = "YOUR_EMAIL@gmail.com";
+$to = "nimeshpatel99@hotmail.com";
 $subject = "Mail Test";
 $message = "This is a test email from XAMPP.";
 $headers = "From: xampp_test";
