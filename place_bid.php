@@ -6,6 +6,7 @@ include_once("header.php");
 $buyer_id = $_SESSION['buyer_id'];
 
 
+
 if(!isset($_SESSION['user_id'])){
     //redirects if not logged in
     header('Location: login.php');
@@ -45,6 +46,37 @@ if (!$auction_data || new DateTime() > new DateTime($auction_data['end_date_time
 }
 $query->close();
 
+// ------- OUTBID NOTIFICATION LOGIC-------- //
+$auction_title_query = $connection->prepare("
+SELECT i.title
+FROM item as i  
+WHERE i.item_id = ?
+");
+$auction_title_query->bind_param("i", $item_id);
+$auction_title_query->execute();
+$auction_title_result = $auction_title_query->get_result();
+$auction_title_array = $auction_title_result->fetch_assoc();
+$auction_title = $auction_title_array['title'];
+
+$previous_highest_bidder_query = $connection->prepare("
+SELECT u.email, u.first_name, u.user_id 
+FROM bids AS b
+JOIN buyer AS t ON b.buyer_id = t.buyer_id
+JOIN users AS u ON t.user_id = u.user_id
+WHERE b.auction_id = ?
+ORDER BY b.amount DESC
+LIMIT 1");  
+
+$previous_highest_bidder_query->bind_param("i", $auction_id);
+$previous_highest_bidder_query->execute();
+$prev_highest_bidder_result = $previous_highest_bidder_query->get_result();
+$outbid_user = null;
+if ($prev_highest_bidder_result-> num_rows >0) {
+    $outbid_user = $prev_highest_bidder_result->fetch_assoc();
+    
+} 
+$previous_highest_bidder_query->close();
+
 // Insert bid into bids table
 $insert_bid_query = "INSERT INTO bids (auction_id, buyer_id, amount, date) VALUES (?, ?, ?, NOW())";
 $query = $connection->prepare($insert_bid_query);
@@ -55,6 +87,27 @@ if (!$query->execute()) {
     header("Location: listing.php?item_id=" . $item_id);
     exit();
 }
+//only sending email if the query was fulfilled & the new highest bidder isn't the same user as the previous highest bidder
+else{
+    if ($outbid_user !== null && $outbid_user['user_id'] !== $_SESSION['user_id']) {
+        $outbid_email = $outbid_user['email'];
+        $outbid_name = ucfirst($outbid_user['first_name']);
+        $subject = "You've been outbid on: {$auction_title}";
+        $message = "
+            Dear {$outbid_name},
+
+            You have been outbid on the auction for '{$auction_title}'. 
+            The new current price is £{$bid_amount}.
+
+            From: The Auction Site
+        ";
+
+        $headers = "From: the auction_site";
+        $headers .= "Content-type: text/plain; charset=UTF-8";
+        mail($outbid_email, $subject, $message, $headers);
+    }
+}
+
 
 
 // Exitoooo!
