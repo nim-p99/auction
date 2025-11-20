@@ -96,66 +96,85 @@ function list_table_items($table) { ?>
 
 <?php 
 
+
 function filter_by_keyword($connection, $keyword, $final_query) {
-  $safe_keyword = mysqli_real_escape_string($connection, $keyword);
-  if (!empty($safe_keyword)) {
-    $final_query .= " AND (i.title LIKE '%$safe_keyword%' OR i.description LIKE '%$safe_keyword%')";
+  if (!empty($keyword)) {
+    $safe_keyword = mysqli_real_escape_string($connection, $keyword);
+    $final_query.= " AND (i.title LIKE '%$safe_keyword%' OR i.description LIKE '%$safe_keyword%')";
   }
   return $final_query;
 }
 
 
-function filter_by_category($connection, $filter_cat,  $final_query) {
 
-  if ($filter_cat != 'all') {
-    $check_if_parent = "SELECT parent_category FROM category WHERE category_id = $filter_cat"; // getting parent category of the selected category
-    $parent_result = mysqli_query($connection, $check_if_parent); // run query through db
-    $parent_row = mysqli_fetch_assoc($parent_result); // got row
-      
-    if ($parent_row['parent_category'] === NULL ){ //is a parent category if NULL
-      $child_query = "SELECT category_id FROM category WHERE parent_category = $filter_cat";// get all child category ids of that parent
-      $child_result = mysqli_query($connection, $child_query); // run query through db
-      $child_ids = []; // array to hold child ids
-      while ($child_row = mysqli_fetch_assoc($child_result)) {
-        $child_ids[] = $child_row['category_id']; // add each child id to array
-      }
-      $child_ids_string = implode(',', $child_ids); // need to convert array to string for sql query, its not possible to pass array directly
-      $final_query .= " AND c.category_id IN ($child_ids_string)";// add to final query 
-    }
-    else {
-        //is a child category
-      $final_query .= " AND c.category_id = $filter_cat";
-    }
-  }
+function filter_by_category($connection, $filter_cat, $final_query) {
 
-    return $final_query;
-} 
+    if ($filter_cat === 'all') {
+        return $final_query;
+    }
+
+    $cat_id = (int)$filter_cat;
+
+    // Is this a parent category?
+    $check_if_parent = mysqli_query($connection, 
+        "SELECT parent_category FROM category WHERE category_id = $cat_id");
+    $parent = mysqli_fetch_assoc($check_if_parent)['parent_category'];
+    
+
+    // Parent category
+    if ($parent === NULL) {
+        // Parent category → fetch children
+        $child_query = mysqli_query($connection, 
+            "SELECT category_id FROM category WHERE parent_category = $cat_id");
+
+        $child_ids = [];
+        while ($child_row = mysqli_fetch_assoc($child_query)) {
+            $child_ids[] = (int)$child_row['category_id'];
+        }
+        // If no children → treat parent as a normal category
+        if (empty($child_ids)) {
+            return $final_query . " AND c.category_id = $cat_id";
+        }
+        $ids = implode(',', $child_ids);
+        return $final_query . " AND c.category_id IN ($ids)";
+    }
+    // Child category
+    return $final_query . " AND c.category_id = $cat_id";
+}
+
+
+
+
 
 function sort_by($sort_by, $final_query) {
-  $core_order = " (a.end_date_time > NOW()) DESC, (a.start_date_time <= NOW()) DESC"; // orders by  : Live auctions > auctions in the future > past auctions
-  if ($sort_by == 'pricelow') {
-    $final_query .= " ORDER BY $core_order, a.current_price ASC";
-  }
-  else if ($sort_by == 'pricehigh') {
-    $final_query .= " ORDER BY $core_order, a.current_price DESC";
-  }
-  else if ($sort_by == 'date_dsc') {
-    $final_query .= " ORDER BY $core_order, a.end_date_time DESC";
-  }
-  else if ($sort_by == 'date_asc') {
-    $final_query .= "  ORDER BY $core_order, a.end_date_time ASC";
-  }
-  else if ($sort_by == 'buy_now_asc') {
-    $final_query .= " AND a.buy_now_price IS NOT NULL ORDER BY $core_order,a.buy_now_price ASC";
-  }
-  else if ($sort_by == 'buy_now_dsc') {
-    $final_query .= " AND a.buy_now_price IS NOT NULL ORDER BY $core_order,a.buy_now_price DESC";
-  }
-  else if ($sort_by == 'hot') {
-    $final_query .= " ORDER BY $core_order, a.num_bids DESC";
-  }
-  return $final_query;
+    $core_order = "(a.end_date_time > NOW()) DESC, (a.start_date_time <= NOW()) DESC";
+
+    if ($sort_by === 'pricelow') {
+        return $final_query . " ORDER BY $core_order, current_price ASC";
+    }
+    else if ($sort_by === 'pricehigh') {
+        return $final_query . " ORDER BY $core_order, current_price DESC";
+    } 
+    else if ($sort_by === 'date_asc') {
+        return $final_query . " ORDER BY $core_order, a.end_date_time ASC";
+    } 
+    else if ($sort_by === 'date_dsc') {
+        return $final_query . " ORDER BY $core_order, a.end_date_time DESC";
+    } 
+    else if ($sort_by === 'buy_now_asc') {
+        return $final_query . " AND a.buy_now_price IS NOT NULL ORDER BY $core_order, a.buy_now_price ASC";
+    } 
+    else if ($sort_by === 'buy_now_dsc') {
+        return $final_query . " AND a.buy_now_price IS NOT NULL ORDER BY $core_order, a.buy_now_price DESC";
+    } else {
+        // default 'hot'
+        return $final_query . " ORDER BY $core_order, num_bids DESC";
+    }
 }
+
+
+
+
 
 function count_rows_in_result($result) {
   $num_rows = mysqli_num_rows($result);
