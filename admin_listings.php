@@ -114,12 +114,25 @@ else {
 
   // Construct the final query using the filter category and sort by
   // need to change so only active auctions are shown
-  $final_query = "SELECT * from auction AS a 
-  JOIN item AS i ON a.item_id = i.item_id
-  JOIN category AS c ON c.category_id = i.category_id 
-  WHERE 1=1 AND a.is_active = 1";
+  $final_query = "
+    SELECT 
+      a.auction_id, a.start_bid, a.reserve_price,
+      a.buy_now_price, a.start_date_time, a.end_date_time,
+      i.item_id, i.title, i.description, i.photo_url, i.item_condition,
+      c.category_id, c.category_name,
+      COALESCE(MAX(b.amount), 0) AS highest_bid,
+      COUNT(b.bid_id) AS num_bids,
+      GREATEST(a.start_bid, COALESCE(MAX(b.amount), 0)) AS current_price
+    FROM auction AS a 
+    JOIN item AS i ON a.item_id = i.item_id
+    JOIN category AS c ON c.category_id = i.category_id
+    LEFT JOIN bids AS b ON b.auction_id = a.auction_id
+    WHERE 1=1 AND a.is_active = 1
+    ";
+  
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
+  $final_query .= " GROUP BY a.auction_id ";
   $final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
 

@@ -161,7 +161,7 @@ else {
     JOIN item AS i ON a.item_id = i.item_id
     JOIN category AS c ON c.category_id = i.category_id
     LEFT JOIN bids AS b ON b.auction_id = a.auction_id
-    WHERE 1=1
+    WHERE 1=1 AND a.is_active = 1
     ";
   
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
@@ -176,6 +176,17 @@ else {
   // For pagination & pagnation calculations
   
   $num_results = mysqli_num_rows($auctions_to_list); //96;
+
+  if ($num_results == 0 || $num_results == null)  {
+      echo'<h4> No Auctions Found! </h4>';
+      if (!empty($keyword)){
+          echo "<p> We couldn't find any active listings matching '". htmlspecialchars($keyword)."'. </p>";
+      }
+      else{
+          echo "<p>No auctions matched your filtering criteria. </p>";
+      }    
+    }
+
   $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
@@ -200,7 +211,7 @@ else {
   $low_page = max(1, $curr_page - 2 - $low_page_boost);
   $high_page = min($max_page, $curr_page + 2 + $high_page_boost);
   
-  if ($curr_page != 1) {
+  if ($curr_page != 1 && $num_results >0) {
     echo('
     <li class="page-item">
       <a class="page-link" href="browse.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
@@ -228,7 +239,7 @@ else {
     </li>');
   }
   
-  if ($curr_page != $max_page) {
+  if ($curr_page != $max_page && $num_results >0) {
     echo('
     <li class="page-item">
       <a class="page-link" href="browse.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">

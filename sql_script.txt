@@ -46,14 +46,14 @@ CREATE TABLE admin (
 CREATE TABLE seller (
   seller_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL UNIQUE,
-  avg_seller_rating DECIMAL(3, 2) DEFAULT 0.00,
+  avg_seller_rating DECIMAL(3, 2) DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(user_id)
 )ENGINE=InnoDB;
 
 CREATE TABLE buyer (
   buyer_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL UNIQUE,
-  avg_buyer_rating DECIMAL(3,2) DEFAULT 0.00,
+  avg_buyer_rating DECIMAL(3,2) DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(user_id)
 )ENGINE=InnoDB;
 

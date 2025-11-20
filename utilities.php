@@ -64,21 +64,31 @@ function print_listing_li($item_id, $title, $desc, $price, $num_bids,$start_time
 
   if ($is_admin){
     $admin_button = '<div class="mt-2">
-      <form method="POST" action="delete_listing.php" onsubmit="return confirm(\'Are you sure you want to delete this listing?\');"> 
+      <form method="POST" action="delete_listing.php" onsubmit="return confirm(\'Are you sure you want to disable this listing?\');"> 
         <input type="hidden" name="auction_id" value="'. $auction_id . '">
         <button type="submit" class="btn btn-danger btn-sm">
-          <i class="fa fa-trash"></i> Delete Listing
+          <i class="fa fa-trash"></i> Disable Listing
         </button>
       </form>
     </div>';
-    }
-  // Print HTML
-  echo('
+
+    echo('
     <li class="list-group-item d-flex justify-content-between">
     <div class="p-2 mr-5"><h5><a href="listing.php?item_id=' . $item_id . '">' . $title . '</a></h5>' . $desc_shortened . '</div>
     <div class="text-center text-nowrap"><span style="font-size: 1.5em">£' . number_format($price, 2) . '</span><br/>' . $num_bids . $bid . '<br/>' . $time_remaining . '<br/>' . $buy_now_str . '<br/>' . $admin_button . '</div>
+  </li>');
+  }
+  else{
+    $insert_admin_button ="";
+    echo('
+    <li class="list-group-item d-flex justify-content-between">
+    <div class="p-2 mr-5"><h5><a href="listing.php?item_id=' . $item_id . '">' . $title . '</a></h5>' . $desc_shortened . '</div>
+    <div class="text-center text-nowrap"><span style="font-size: 1.5em">£' . number_format($price, 2) . '</span><br/>' . $num_bids . $bid . '<br/>' . $time_remaining . '<br/>' . $buy_now_str . '</div>
   </li>'
   );
+  }
+  // Print HTML
+  
 }
 
 function list_table_items($table, $is_admin=false) { ?>
@@ -183,6 +193,49 @@ function sort_by($sort_by, $final_query) {
     }
 }
 
+function filter_by_keyword_admin($connection, $keyword, $final_query) {
+  if (!empty($keyword)) {
+    $safe_keyword = mysqli_real_escape_string($connection, $keyword);
+    $final_query.= " AND CONCAT_WS(' ', u.first_name, u.family_name, u.username, u.email) LIKE '%$safe_keyword%'";
+  }
+  return $final_query;
+  
+}
+
+function filter_by_account($connection, $filter_cat,  $final_query) {
+  if ($filter_cat == 'all')
+    return $final_query;
+  else if ($filter_cat == 'buyer'){
+    return $final_query .= " AND b.buyer_id IS NOT NULL"; 
+  }
+  else if ($filter_cat == 'seller') {
+    return $final_query .=" AND s.seller_id IS NOT NULL";
+  }
+}
+
+function sort_by_admin($sort_by, $final_query) {
+  switch ($sort_by) {
+    case 'alpha':
+      $final_query .= " ORDER BY u.first_name ASC, u.family_name ASC";
+      break;
+    case 'r-alpha':
+      $final_query .= " ORDER BY u.first_name DESC, u.family_name DESC";
+      break;
+    case'active':
+      $final_query .= " ORDER BY u.acc_active DESC,u.user_id DESC";
+      break;
+    case'inactive':
+      $final_query .= " ORDER BY u.acc_active ASC, u.user_id DESC";
+      break;
+    default:
+      case'active':
+      $final_query .= " ORDER BY u.user_id DESC"; //will result in most recent up the top
+      break;
+  }
+    return $final_query;
+
+  }
+
 
 
 
@@ -191,4 +244,60 @@ function count_rows_in_result($result) {
   $num_rows = mysqli_num_rows($result);
   return $num_rows;
 }
+
+
+function list_account_details($table) { ?>
+  <table class="table table-striped table-hover mt-3">
+    <thead class="thead-light">
+      <tr>
+        <th>Full Name</th>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th class="text-center">Active</th>
+        <th class="text-center">Seller ID</th>
+        <th class="text-center">Seller Rating</th>
+        <th class="text-center">Buyer ID</th>
+        <th class="text-center">Buyer Rating</th>
+        <th class="text-center">Disable/Enable</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php while ($row = mysqli_fetch_assoc($table)): ?>
+      <tr>
+        <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['family_name']); ?></td>
+        <td><?php echo htmlspecialchars($row['user_id']); ?></td>
+        <td><?php echo htmlspecialchars($row['username']); ?></td>
+        <td><?php echo htmlspecialchars($row['email']); ?></td>
+        <td class="text-center">
+          <?php if($row['acc_active']){
+              echo ('Yes');
+              $action = "disable";
+              $button_class ="danger";
+           } else {
+              echo ('No');
+              $action = "enable";
+              $button_class="success";
+            } ?> 
+            
+        </td>
+        <td class="text-center"><?php echo htmlspecialchars($row['seller_id']); ?></td>
+        <td class="text-center"><?php echo htmlspecialchars($row['avg_seller_rating']); ?></td>
+        <td class="text-center"><?php echo htmlspecialchars($row['buyer_id']); ?></td>
+        <td class="text-center"><?php echo htmlspecialchars($row['avg_buyer_rating']); ?></td>
+        <td>
+          <form method="POST" action="enable_acc.php" onsubmit="return confirm('Are you sure you want to <?php echo $action; ?> this account?');"> 
+            <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
+            <input type="hidden" name="action" value="<?php echo $action; ?>">
+            <button type="submit" class="btn btn-<?php echo $button_class; ?> btn-sm">
+              <i class="fa fa-power-off"></i> <?php echo ($action); ?>
+            </button>
+          </form>
+        </td>
+      </tr>
+      <?php endwhile; ?>
+    </tbody>
+  </table>
+<?php } ?>
+
 ?>

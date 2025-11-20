@@ -38,48 +38,48 @@ else {
               <i class="fa fa-search"></i>
             </span>
           </div>
-          <input type="text" class="form-control border-left-0" id="keyword" name= "keyword" placeholder="Search for anything" value ="<?php echo htmlspecialchars($keyword); ?>">
+          <input type="text" class="form-control border-left-0" id="keyword" name= "keyword" placeholder="Search user details" value ="<?php echo htmlspecialchars($keyword); ?>">
         </div>
       </div>
     </div>
-    <!-- end keyword search -->
-
-    <!-- Category filter and sort by -->
+    
+    <!-- Acc Type filtering -->
     <div class="col-md-3 pr-0">
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
         <select class="form-control" id="cat" name="cat">
-          <!-- first option will be all categories 
-          need to come back to this if we want to order by parent category then list its children
-          -->
-          <option value="all">All Categories</option>
-          <!--- --------------------------------------------------------------------------------------
-                      NEED TO CHANGE SO SELECTED CATEGORY REMAINS SELECTED AFTER SUBMITTING FORM
-          ----------------------------------------------------------------------------------------- -->
+          <option value="all" <?php if ($filter_cat=='all') echo 'selected'; ?>>All Accounts</option>
           <?php
-            #category populated from database
-            $category_query = "SELECT * from category AS c";
-            $categories_to_list = mysqli_query($connection, $category_query);
-            while ($row = mysqli_fetch_assoc($categories_to_list)) : ?>
-                <?php echo "<option value = '{$row['category_id']}'> {$row['category_name']}</option>"; ?>
-          <?php endwhile ?>
-
+            $sort_options = [ 
+              'buyer' => 'Buyer',
+              'seller' => 'Seller'
+            ];
+            foreach ($sort_options as $key => $label) {
+              $selected = ($sort_by == $key) ? 'selected' : '';
+              echo "<option value='$key' $selected>$label</option>";
+            }
+            ?>
         </select>
       </div>
     </div>
-    <!-- end category filter -->
+
      <!-- Sort by -->
     <div class="col-md-3 pr-0">
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
         <select class="form-control" id="order_by" name="sort">
-          <option value="hot">Hot items</option>
-          <option value="date_asc">Soonest expiry</option>
-          <option value="date_dsc">Latest expiry</option>
-          <option value="pricelow">Price (low-high)</option>
-          <option value="pricehigh">Price (high-low)</option>
-          <option value="buy_now_asc">Buy Now (low-high)</option> 
-          <option value="buy_now_dsc">Buy Now (high-low)</option>
+          <?php 
+          $sort_options = [
+              'active' => 'Acc. Active',
+              'inactive' => 'Acc. inactive',
+              'alpha' => 'A-Z',
+              'r-alpha' => 'Z-A'
+            ];
+            foreach ($sort_options as $key => $label) {
+              $selected = ($sort_by == $key) ? 'selected' : '';
+              echo "<option value='$key' $selected>$label</option>";
+            }
+          ?>
         </select>
       </div>
     </div>
@@ -114,22 +114,28 @@ else {
 
   // Construct the final query using the filter category and sort by
   // need to change so only active auctions are shown
-  $final_query = "SELECT * from auction AS a 
-  JOIN item AS i ON a.item_id = i.item_id
-  JOIN category AS c ON c.category_id = i.category_id 
-  WHERE 1=1 ";
-  $final_query = filter_by_keyword($connection, $keyword, $final_query);
-  $final_query = filter_by_category($connection, $filter_cat,  $final_query);
-  $final_query = sort_by($sort_by, $final_query);
-  $auctions_to_list = mysqli_query($connection, $final_query);
+  $final_query = "
+    SELECT 
+      u.user_id, u.email, u.username, u.acc_active, u.first_name, u.family_name, s.seller_id,
+      s.avg_seller_rating, b.buyer_id, b.avg_buyer_rating  
+    FROM users AS u
+    LEFT JOIN seller AS s ON s.user_id = u.user_id 
+    LEFT JOIN buyer AS b ON b.user_id = u.user_id
+    WHERE 1=1 AND u.user_id != 1
+    ";
+  
+  $final_query = filter_by_keyword_admin($connection, $keyword, $final_query);
+  $final_query = filter_by_account($connection, $filter_cat,  $final_query);
+  $final_query = sort_by_admin($sort_by, $final_query);
+  $accs_to_list = mysqli_query($connection, $final_query);
 
-  $num_results = mysqli_num_rows($auctions_to_list); //96;
+  $num_results = mysqli_num_rows($accs_to_list); //96;
   
   // showing message if no results
   if ($num_results == 0 || $num_results == null)  {
     echo'<h4> No Auctions Found! </h4>';
     if (!empty($keyword)){
-        echo "<p> We couldn't find users matching '". htmlspecialchars($keyword)."'. </p>";
+        echo "<p> We couldn't find any active listings matching '". htmlspecialchars($keyword)."'. </p>";
     }
     else{
         echo "<p>No auctions matched your filtering criteria. </p>";
@@ -137,7 +143,7 @@ else {
   }
 // Use the function from utilities.php to print the listings
   else{
-    list_table_items($auctions_to_list);
+    list_account_details($accs_to_list,$is_admin = true);
   }
 
   $results_per_page = 10;
