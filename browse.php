@@ -12,6 +12,11 @@ require("utilities.php");
 
 
 <?php
+
+  //preserve current URL
+$base_url = htmlspecialchars($_SERVER['PHP_SELF']);
+$current_params = $_GET;
+
 //VARIABLE INITIALISATION
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
 $sort_by = $_GET['sort'] ?? 'hot'; //default to items that have lots of bids'
@@ -27,7 +32,15 @@ else {
 
 <div id="searchSpecs">
 <!-- Search specifications bar -->
-<form method="get" action="browse.php">
+<form method="get" action="<?php echo $base_url; ?>">
+   <?php
+    foreach ($current_params as $key => $value) {
+      if (!in_array($key, ['keyword', 'cat', 'sort', 'page'])) {
+        echo '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+      }
+    }
+  ?>
+
   <div class="row">
     <div class="col-md-5 pr-0">
       <div class="form-group">
@@ -52,7 +65,7 @@ else {
           <!-- first option will be all categories 
           need to come back to this if we want to order by parent category then list its children
           -->
-          <option value="all">All Categories</option>
+          <option value="all" <?php if ($filter_cat=='all') echo 'selected'; ?>>All Categories</option>
           <!--- --------------------------------------------------------------------------------------
                       NEED TO CHANGE SO SELECTED CATEGORY REMAINS SELECTED AFTER SUBMITTING FORM
           ----------------------------------------------------------------------------------------- -->
@@ -60,10 +73,11 @@ else {
             #category populated from database
             $category_query = "SELECT * from category AS c";
             $categories_to_list = mysqli_query($connection, $category_query);
-            while ($row = mysqli_fetch_assoc($categories_to_list)) : ?>
-                <?php echo "<option value = '{$row['category_id']}'> {$row['category_name']}</option>"; ?>
-          <?php endwhile ?>
-
+            while ($row = mysqli_fetch_assoc($categories_to_list)) {
+              $selected = ($filter_cat == $row['category_id']) ? 'selected' : '';
+              echo "<option value = '{$row['category_id']}' $selected> {$row['category_name']}</option>";
+            }
+            ?>
         </select>
       </div>
     </div>
@@ -73,13 +87,28 @@ else {
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
         <select class="form-control" id="order_by" name="sort">
-          <option value="hot">Hot items</option>
+          <?php
+            $sort_options = [
+              'hot' => 'Hot items',
+              'date_asc' => 'Soonest expiry',
+              'date_dsc' => 'Latest expiry',
+              'pricelow' => 'Price (low-high)',
+              'pricehigh' => 'Price (high-low)',
+              'buy_now_asc' => 'Buy Now (low-high)',
+              'buy_now_dsc' => 'Buy Now (high-low)'
+            ];
+            foreach ($sort_options as $key => $label) {
+              $selected = ($sort_by == $key) ? 'selected' : '';
+              echo "<option value='$key' $selected>$label</option>";
+            }
+            ?>
+          <!--<option value="hot">Hot items</option>
           <option value="date_asc">Soonest expiry</option>
           <option value="date_dsc">Latest expiry</option>
           <option value="pricelow">Price (low-high)</option>
           <option value="pricehigh">Price (high-low)</option>
           <option value="buy_now_asc">Buy Now (low-high)</option> 
-          <option value="buy_now_dsc">Buy Now (high-low)</option>
+          <option value="buy_now_dsc">Buy Now (high-low)</option> -->
         </select>
       </div>
     </div>
@@ -114,12 +143,30 @@ else {
 
   // Construct the final query using the filter category and sort by
   // need to change so only active auctions are shown
-  $final_query = "SELECT * from auction AS a 
-  JOIN item AS i ON a.item_id = i.item_id
-  JOIN category AS c ON c.category_id = i.category_id 
-  WHERE 1=1 ";
+
+  /* $final_query = "SELECT * from auction AS a  */
+  /* JOIN item AS i ON a.item_id = i.item_id */
+  /* JOIN category AS c ON c.category_id = i.category_id  */
+  /* WHERE 1=1 "; */
+  $final_query = "
+    SELECT 
+      a.auction_id, a.start_bid, a.reserve_price,
+      a.buy_now_price, a.start_date_time, a.end_date_time,
+      i.item_id, i.title, i.description, i.photo_url, i.item_condition,
+      c.category_id, c.category_name,
+      COALESCE(MAX(b.amount), 0) AS highest_bid,
+      COUNT(b.bid_id) AS num_bids,
+      GREATEST(a.start_bid, COALESCE(MAX(b.amount), 0)) AS current_price
+    FROM auction AS a 
+    JOIN item AS i ON a.item_id = i.item_id
+    JOIN category AS c ON c.category_id = i.category_id
+    LEFT JOIN bids AS b ON b.auction_id = a.auction_id
+    WHERE 1=1
+    ";
+  
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
+  $final_query .= " GROUP BY a.auction_id ";
   $final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
 

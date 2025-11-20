@@ -84,8 +84,8 @@ CREATE TABLE auction (
   buy_now_price DECIMAL(10,2),
   start_date_time DATETIME NOT NULL,
   end_date_time DATETIME NOT NULL,
-  current_price INT UNSIGNED,
-  num_bids INT UNSIGNED,
+  -- current_price INT UNSIGNED,
+  -- num_bids INT UNSIGNED,
   FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
   FOREIGN KEY (item_id) REFERENCES item(item_id),
   is_active BOOLEAN NOT NULL DEFAULT TRUE
@@ -164,6 +164,8 @@ INSERT INTO seller (user_id, avg_seller_rating) VALUES
 (3, 4.25);
 
 INSERT INTO buyer (user_id, avg_buyer_rating) VALUES
+(2, 4.75),  
+(3, 4.20), 
 (4, 5.00),
 (5, 4.50);
 
@@ -190,12 +192,12 @@ INSERT INTO item (item_id, category_id, title, description, photo_url, item_cond
 (105, 5, 'iphone 17 pro max', 'red, 256gb, slightly cracked screen', 'url/iphone.jpg', 'Used - Fair');
 
 
-INSERT INTO auction (auction_id, seller_id, item_id, start_bid, reserve_price, buy_now_price, start_date_time, end_date_time, num_bids, current_price) VALUES
-(501, 1, 101, 500.00, 750.00, 999.99, '2025-11-01 10:00:00', '2025-11-08 10:00:00', 77, 5.00), -- closed
-(502, 2, 102, 100.00, 200.00, NULL, '2025-11-12 12:00:00', '2025-12-01 12:00:00', 10, 40.00), -- Active
-(503, 1, 103, 50.00, NULL, 150.00, '2026-11-05 14:00:00', '2026-11-12 14:00:00', 0, 15.00), -- Future/Upcoming
-(504, 2, 104, 90.00, 400.00, 1000.00, '2025-11-16 12:00:00', '2026-02-16 12:00:00', 2, 80.00),
-(505, 2, 105, 95.00, 500.00, 2000.00, '2025-11-16 12:00:00', '2026-02-16 12:00:00', 2, 90.00);
+INSERT INTO auction (auction_id, seller_id, item_id, start_bid, reserve_price, buy_now_price, start_date_time, end_date_time) VALUES
+(501, 1, 101, 500.00, 750.00, 999.99, '2025-11-01 10:00:00', '2025-11-08 10:00:00'), -- closed
+(502, 2, 102, 100.00, 200.00, NULL, '2025-11-12 12:00:00', '2025-12-01 12:00:00'), -- Active
+(503, 1, 103, 50.00, NULL, 150.00, '2026-11-05 14:00:00', '2026-11-12 14:00:00'), -- Future/Upcoming
+(504, 2, 104, 90.00, 400.00, 1000.00, '2025-11-16 12:00:00', '2026-02-16 12:00:00'),
+(505, 2, 105, 95.00, 500.00, 2000.00, '2025-11-16 12:00:00', '2026-02-16 12:00:00');
 
 -- Diana (buyer_id 1 / user_id 4) watches Laptop (501)
 INSERT INTO watchlist (user_id, auction_id) VALUES (4, 501);

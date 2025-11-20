@@ -1,9 +1,15 @@
 <?php
+
 // TODO: Extract $_POST variables, check they're OK, and attempt to make a bid.
 // Notify user of success/failure and redirect/give navigation options.
 include_once("header.php");
 
-$buyer_id = $_SESSION['buyer_id'];
+
+
+/* echo '<pre>'; */
+/* var_dump($_POST); */
+/* var_dump($_SESSION); */
+/* echo '</pre>'; */
 
 
 
@@ -12,11 +18,17 @@ if(!isset($_SESSION['user_id'])){
     header('Location: login.php');
     exit();   
 }
+
+$buyer_id = $_SESSION['buyer_id'];
 // Get POST data
-$bid_amount = $_POST['bid'] ?? null;
-$auction_id = $_POST['auction_id'] ?? null;
-$highest_bid = $_POST['highest_bid'] ?? null;
-$item_id = $_POST['item_id'] ?? null;
+$bid_amount = (float)$_POST['bid'] ?? null;
+$auction_id = (int)$_POST['auction_id'] ?? null;
+$highest_bid = (float)$_POST['highest_bid'] ?? null;
+$item_id = (int)$_POST['item_id'] ?? null;
+/* echo '<pre>'; */
+/* var_dump($buyer_id, $item_id, $auction_id, $bid_amount, $highest_bid); */
+/* echo '</pre>'; */
+/* exit(); */
 
 // If bid amount missing = error
 if (!is_numeric($bid_amount) || $bid_amount <= 0) {
@@ -82,7 +94,9 @@ $insert_bid_query = "INSERT INTO bids (auction_id, buyer_id, amount, date) VALUE
 $query = $connection->prepare($insert_bid_query);
 $query->bind_param("iid", $auction_id, $buyer_id, $bid_amount);
 
+
 if (!$query->execute()) {
+    die("Insert failed: " . $query->error);
     $_SESSION['error_message'] = "Failed to place bid. Please try again.";
     header("Location: listing.php?item_id=" . $item_id);
     exit();
@@ -107,6 +121,9 @@ else{
         mail($outbid_email, $subject, $message, $headers);
     }
 }
+
+
+
 
 
 
