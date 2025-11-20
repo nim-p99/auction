@@ -163,6 +163,8 @@ INSERT INTO seller (user_id, avg_seller_rating) VALUES
 (3, 4.25);
 
 INSERT INTO buyer (user_id, avg_buyer_rating) VALUES
+(2, 4.75),  
+(3, 4.20), 
 (4, 5.00),
 (5, 4.50);
 
