@@ -87,7 +87,8 @@ CREATE TABLE auction (
   current_price INT UNSIGNED,
   num_bids INT UNSIGNED,
   FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
-  FOREIGN KEY (item_id) REFERENCES item(item_id)
+  FOREIGN KEY (item_id) REFERENCES item(item_id),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE
 )ENGINE=InnoDB;
 
 CREATE TABLE watchlist (

@@ -35,10 +35,15 @@ $_SESSION['logged_in'] = true;
 
 
 // 6. success message and redirect
-echo "Login successful! Redirecting to homepage ...";
+if ($_SESSION['user_id'] == 1) {
+  echo "<meta http-equiv='refresh' content='2;url=admin_listings.php'>";
+  echo "<p>If you are not redirected automatically, <a href='admin_listings.php'>click here</a></p>";
+}
+else {
+  echo "Login successful! Redirecting to homepage ...";
 
-echo "<meta http-equiv='refresh' content='2;url=browse.php'>";
-echo "<p>If you are not redirected automatically, <a href='browse.php'>click here</a></p>";
-
+  echo "<meta http-equiv='refresh' content='2;url=browse.php'>";
+  echo "<p>If you are not redirected automatically, <a href='browse.php'>click here</a></p>";
+}
 $query->close();
 ?>

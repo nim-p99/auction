@@ -23,7 +23,7 @@ function display_time_remaining($interval) {
 
 // print_listing_li:
 // This function prints an HTML <li> element containing an auction listing
-function print_listing_li($item_id, $title, $desc, $price, $num_bids,$start_time, $end_time, $buy_now_price)
+function print_listing_li($item_id, $title, $desc, $price, $num_bids,$start_time, $end_time, $buy_now_price, $is_admin=False, $auction_id)
 {
   // Truncate long descriptions
   if (strlen($desc) > 250) {
@@ -61,17 +61,27 @@ function print_listing_li($item_id, $title, $desc, $price, $num_bids,$start_time
   if (!is_null($buy_now_price)){
     $buy_now_str ='Buy Now: £' . $buy_now_price; 
   }
-  
+
+  if ($is_admin){
+    $admin_button = '<div class="mt-2">
+      <form method="POST" action="delete_listing.php" onsubmit="return confirm(\'Are you sure you want to delete this listing?\');"> 
+        <input type="hidden" name="auction_id" value="'. $auction_id . '">
+        <button type="submit" class="btn btn-danger btn-sm">
+          <i class="fa fa-trash"></i> Delete Listing
+        </button>
+      </form>
+    </div>';
+    }
   // Print HTML
   echo('
     <li class="list-group-item d-flex justify-content-between">
     <div class="p-2 mr-5"><h5><a href="listing.php?item_id=' . $item_id . '">' . $title . '</a></h5>' . $desc_shortened . '</div>
-    <div class="text-center text-nowrap"><span style="font-size: 1.5em">£' . number_format($price, 2) . '</span><br/>' . $num_bids . $bid . '<br/>' . $time_remaining . '<br/>' . $buy_now_str . '</div>
+    <div class="text-center text-nowrap"><span style="font-size: 1.5em">£' . number_format($price, 2) . '</span><br/>' . $num_bids . $bid . '<br/>' . $time_remaining . '<br/>' . $buy_now_str . '<br/>' . $admin_button . '</div>
   </li>'
   );
 }
 
-function list_table_items($table) { ?>
+function list_table_items($table, $is_admin=false) { ?>
   <?php
  while ($row = mysqli_fetch_assoc($table)): ?>
       <div class="list-group"> 
@@ -84,10 +94,11 @@ function list_table_items($table) { ?>
         $num_bids =$row['num_bids'];
         $buy_now_price =$row['buy_now_price'];
         $start_date= new DateTime($row['start_date_time']);
+        $auction_id= $row['auction_id'];
 
         //using the print listing function from utilities.php
         //need to update so if starting price > current price = print starting price not current price
-        print_listing_li($item_id, $title, $description, $current_price, $num_bids, $start_date, $end_date, $buy_now_price) ?>
+        print_listing_li($item_id, $title, $description, $current_price, $num_bids, $start_date, $end_date, $buy_now_price,$is_admin, $auction_id) ?>
       
       </div>
       
