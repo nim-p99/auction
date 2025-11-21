@@ -47,8 +47,18 @@
   $query->execute();
   $auction = $query->get_result()->fetch_assoc();
 
+    // calculates / converts time
+  $get_end_time = $auction["end_date_time"];
+  $end_time = new DateTime($get_end_time);
+  
+  //testing, remove last line to stop testing!!
+  $now= new DateTime();
+  $now->modify("+5 years");
 
-  // get highest bid for auction 
+  
+  
+
+  // get highest bid 
   $highest_bid_sql = "
     SELECT MAX(amount) AS highest_bid
     FROM bids
@@ -66,14 +76,34 @@
     $highest_bid = 0;
   }
 
-  // calculates / converts time
-  $get_end_time = $auction["end_date_time"];
-  $end_time = new DateTime($get_end_time);
-  $now = new DateTime();
-  ?>
+  // get winning bidder if auction ended
+  $winning_bidder = null;
+  if ($now>$end_time && $highest_bid > 0) { // added 0 to make sure at least 1 bid placed
+    $winner_id_query =$connection->prepare("
+      SELECT buyer_id
+      FROM bids
+      Where AUCTION_ID =? AND AMOUNT =?
+      ORDER BY date asc
+      LIMIT 1
+    ");
+  $winner_id_query->bind_param("id", $auction_id, $highest_bid);
+  $winner_id_query->execute();
+  $winner_result = $winner_id_query->get_result();
+    
+    if ($winner_row = $winner_result->fetch_assoc()) {
+        $winning_bidder_id = $winner_row['buyer_id'];
+  // TESTING, delete once Luke starts notifications
+    if ($winning_bidder_id == $_SESSION['buyer_id']) {
+        echo "<p style='color: green;'>You are the winner of this auction (TEST MESSAGE).</p>";
+    } else {
+        echo "<p style='color: red;'>You are NOT the winner of this auction (TEST MESSAGE).</p>";
+    }
+  }
+}
+    
 
 
-<?php
+
   // TODO: Note: Auctions that have ended may pull a different set of data,
   //       like whether the auction ended in a sale or was cancelled due
   //       to lack of high-enough bids. Or maybe not.
