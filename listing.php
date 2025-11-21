@@ -106,7 +106,7 @@
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
-  if ($now < $end_time):
+  if ($now < $end_time && $_SESSION['user_id']!==1):
 ?>
     <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
       <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
@@ -136,18 +136,20 @@
     <p class="lead">Current bid: £<?php echo(number_format($highest_bid, 2)) ?></p>
 
     <!-- Bidding form -->
-    <form method="POST" action="place_bid.php">
-      <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
-      <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
-      <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
-      <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text">£</span>
+    <?php if($_SESSION['user_id']!==1){ ?>
+      <form method="POST" action="place_bid.php">
+        <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
+        <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
+        <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">£</span>
+          </div>
+        <input type="number" class="form-control" id="bid" name="bid" step="0.1" required>
         </div>
-	    <input type="number" class="form-control" id="bid" name="bid" step="0.1" required>
-      </div>
-      <button type="submit" class="btn btn-primary form-control">Place bid</button>
-    </form>
+        <button type="submit" class="btn btn-primary form-control">Place bid</button>
+      </form>
+    <?php }?>
 <?php endif ?>
 
   
