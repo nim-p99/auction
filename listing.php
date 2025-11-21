@@ -53,7 +53,7 @@
   
   //testing, remove last line to stop testing!!
   $now= new DateTime();
-  $now->modify("+5 years");
+
 
   
   
@@ -80,9 +80,13 @@
   $winning_bidder = null;
   if ($now>$end_time && $highest_bid > 0) { // added 0 to make sure at least 1 bid placed
     $winner_id_query =$connection->prepare("
-      SELECT buyer_id
-      FROM bids
-      Where AUCTION_ID =? AND AMOUNT =?
+      SELECT bd.amount, bd.buyer_id, u.email, u.first_name, i.title, a.mail_sent
+      FROM bids AS bd
+      JOIN buyer AS b ON b.buyer_id = bd.buyer_id
+      JOIN users AS u ON b.user_id = u.user_id
+      JOIN auction AS a ON a.auction_id = bd.auction_id
+      JOIN item AS i ON a.item_id = i.item_id
+      Where bd.auction_id =? AND bd.amount =?
       ORDER BY date asc
       LIMIT 1
     ");
@@ -90,15 +94,37 @@
   $winner_id_query->execute();
   $winner_result = $winner_id_query->get_result();
     
-    if ($winner_row = $winner_result->fetch_assoc()) {
+    if (($winner_row = $winner_result->fetch_assoc()) && $winner_row['mail_sent'] !== 1) {
         $winning_bidder_id = $winner_row['buyer_id'];
-  // TESTING, delete once Luke starts notifications
-    if ($winning_bidder_id == $_SESSION['buyer_id']) {
-        echo "<p style='color: green;'>You are the winner of this auction (TEST MESSAGE).</p>";
-    } else {
-        echo "<p style='color: red;'>You are NOT the winner of this auction (TEST MESSAGE).</p>";
+        $winning_bidder_name = ucfirst($winner_row['first_name']);
+        $winning_bidder_item = $winner_row['title'];
+        $winning_bidder_bid_amount =$winner_row['amount'];
+        
+        $to = $winner_row['email'];
+        $subject = "You WON!!!";
+        $message = "
+        Dear {$winning_bidder_name},
+
+        Congratulations! You won the auction: '{$winning_bidder_item}'. 
+        With a bid of £{$winning_bidder_bid_amount}.
+        
+        From 
+        The Auction Site
+        ";
+        $headers= "From: The Auction Site";
+        if(mail($to, $subject, $message, $headers)) {
+          //if the mail sends update auction table to say mail sent
+          $update_mail_query = $connection->prepare("
+          UPDATE auction
+          SET mail_sent = 1
+          WHERE auction_id = ?");
+          $update_mail_query -> bind_param("i", $auction_id);
+          $update_mail_query->execute();
+          $update_mail_query->close();
+        }
+
+
     }
-  }
 }
     
 
@@ -159,7 +185,8 @@
     <!-- check if auction ended -->
     <p><strong>
 <?php if ($now > $end_time): ?>
-     This auction ended <?php echo(date_format($end_time, 'j M H:i')) ?>
+     <p>This auction ended <?php echo(date_format($end_time, 'j M H:i'))?></p>
+     <p>Winning bid: £<?php echo(number_format($highest_bid, 2))?></p>
      <!-- TODO: Print the result of the auction here? -->
 <?php else: ?>
      Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
