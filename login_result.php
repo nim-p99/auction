@@ -13,7 +13,7 @@ if (empty($email) || empty($password)) {
 
 // 3. fetch user from database by their email
 // (prepared statements protect from SQL injection the best)
-$query = $connection->prepare("SELECT user_id, password FROM users WHERE email = ?");
+$query = $connection->prepare("SELECT user_id, acc_active, password FROM users WHERE email = ?");
 $query->bind_param("s", $email);
 $query->execute();
 $result = $query->get_result();
@@ -22,7 +22,9 @@ $user = $result->fetch_assoc();
 if(!$user) {
   die("Invalid email or password...");
 }
-
+if($user['acc_active'] == 0){
+  die("Your Account is suspended, please contact support for assistance.");
+}
 // 4. verify password
 if (!password_verify($password, $user['password'])) {
   die("Invalid email or password.");
