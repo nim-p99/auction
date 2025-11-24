@@ -1,4 +1,10 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+?>
+
+
+<?php
 ob_start();
 include_once "header.php";
 include_once "utilities.php";
@@ -32,7 +38,7 @@ $sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
 
 
 
-$seller_id = $_SESSION['seller_id']
+$seller_id = $_SESSION['seller_id'];
 ?>
 
 <div class="container mt-4 mb-4"> <!-- mt and mb are margin top and bottom -->
@@ -51,7 +57,7 @@ $seller_id = $_SESSION['seller_id']
                 </a>
 
                 <a class= "nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
-                <?php echo('href="my_profile.php?section=seller&seller_id=' . $seller_id . '">') ?><!-- Seller Dashboard link -->
+                  href="my_profile.php?section=seller&seller_id=<?php echo $seller_id; ?>"><!-- Seller Dashboard link -->
                     <i class="fa fa-gavel fa-fw mr-2"></i> Seller Dashboard
                 </a>
 
@@ -118,11 +124,11 @@ $seller_id = $_SESSION['seller_id']
                       <p class="card-text"> Here you can view all items you recently viewed</p>
                       <?php include "recentlyviewed.php";?>
                     </div>
-                    <!-- Watchlist tab content -->
+                    <!-- Watchlist tab content --> 
                     <div class="tab-pane fade <?php if ($current_tab == 'watchlist') echo 'show active'; ?>" 
                           id="watchlist" role="tabpanel">
-                      <h5 class="card-title">Watchlist</h5>
-                      <p class="card-text"> Here you can view all items you saved.</p>
+                      <h5 class="card-title">My Watchlist</h5>
+                      <p class="card-text"> Here you can view your watchlist.</p>
                       <?php include "watchlist.php";?>
                     </div>
                 </div> <!-- end buyer tab content -->
@@ -139,11 +145,11 @@ $seller_id = $_SESSION['seller_id']
                 <ul class= "nav nav-tabs card-header-tabs" id="seller-dashboard-tabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
-                        <?php echo('href="my_profile.php?section=seller&tab=listings&seller_id=' . $seller_id . '"');?>>My Listings</a>
+                        href="my_profile.php?section=seller&tab=listings&seller_id=<?php echo $seller_id; ?>">My Listings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
-                        <?php echo('href="my_profile.php?section=seller&tab=listings&complete=true&seller_id=' . $seller_id . '"');?>>Completed Auctions</a>
+                        href="my_profile.php?section=seller&tab=listings&complete=true&seller_id=<?php echo $seller_id; ?>">Completed Auctions</a>
                     </li>
                 </ul>
             </div>
