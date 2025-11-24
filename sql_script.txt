@@ -125,7 +125,6 @@ CREATE TABLE message (
 CREATE TABLE transaction (
   transaction_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   bid_id INT UNSIGNED NOT NULL,
-  date DATETIME NOT NULL,
   seller_rating DECIMAL(3,2) NULL,
   seller_comments TEXT NOT NULL,
   buyer_rating DECIMAL(3,2) NULL,
