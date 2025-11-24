@@ -90,11 +90,12 @@
       ORDER BY date asc
       LIMIT 1
     ");
-  $winner_id_query->bind_param("id", $auction_id, $highest_bid);
-  $winner_id_query->execute();
-  $winner_result = $winner_id_query->get_result();
+    $winner_id_query->bind_param("id", $auction_id, $highest_bid);
+    $winner_id_query->execute();
+    $winner_result = $winner_id_query->get_result();
   
     if (($winner_row = $winner_result->fetch_assoc()) && $winner_row['mail_sent'] !== 1) {
+        $winner_id_query->close();
         $winning_bidder_id = $winner_row['buyer_id'];
         $winning_bidder_name = ucfirst($winner_row['first_name']);
         $winning_bidder_item = $winner_row['title'];
@@ -122,13 +123,44 @@
           $update_mail_query->execute();
           $update_mail_query->close();
         }
-  #----- transaction update -----#
-  $trans_query = $connection->prepare("
-        INSERT INTO transaction (bid_id) 
-        VALUES (?)");
-      $trans_query-> bind_param("i", $winner_row['bid_id']);
-      $trans_query->execute();
-      $trans_query->close(); 
+
+    #------emailing seller -----#
+    $seller_query = $connection->prepare("
+        SELECT u.first_name, u.email, a.mail_sent
+        FROM auction AS a
+        JOIN seller AS s ON a.seller_id = s.seller_id
+        JOIN users AS u ON s.user_id = u.user_id
+        WHERE a.auction_id = ?
+    ");
+        $seller_query-> bind_param("i", $auction_id);
+        $seller_query->execute();
+        $seller_result = $seller_query->get_result();
+        if($seller_row = $seller_result->fetch_assoc()){
+          $seller_name = ucfirst($seller_row['first_name']);
+          $to = $seller_row['email'];
+          $subject = "SOLD: {$winning_bidder_item}";
+          $message = "
+          Dear {$seller_name},
+
+          Congratulations! Your auction for: '{$winning_bidder_item}'. 
+          Was bought with a bid of £{$winning_bidder_bid_amount}.
+          
+          From 
+          The Auction Site
+          ";
+          $headers= "From: The Auction Site";
+
+          $headers= "From: The Auction Site";
+          mail($to, $subject, $message, $headers);
+        }
+        $seller_query->close();
+    #----- transaction update -----#
+    $trans_query = $connection->prepare("
+          INSERT INTO transaction (bid_id) 
+          VALUES (?)");
+        $trans_query-> bind_param("i", $winner_row['bid_id']);
+        $trans_query->execute();
+        $trans_query->close(); 
     }
 }
     
