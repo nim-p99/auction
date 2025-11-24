@@ -86,9 +86,25 @@
   
   // TODO: If the user has a session, use it to make a query to the database
   //       to determine if the user is already watching this item.
-  //       For now, this is hardcoded.
-  $has_session = true;
+  //       For now, this is hardcoded. 
   $watching = false;
+  if (isset($_SESSION['user_id'])) {
+      $user_id = $_SESSION['user_id'];
+
+      $stmt = $connection->prepare("
+          SELECT 1 FROM watchlist 
+          WHERE user_id = ? AND auction_id = ?
+          LIMIT 1
+      ");
+      $stmt->bind_param("ii", $user_id, $auction_id);
+      $stmt->execute();
+      $stmt->store_result();
+
+      if ($stmt->num_rows > 0) {
+          $watching = true;
+      }
+      $stmt->close();
+}
 ?>
 
 
@@ -106,8 +122,7 @@
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
-  if ($now < $end_time):
-?>
+  if ($now < $end_time && $_SESSION['user_id']!==1): ?>
     <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
       <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
     </div>

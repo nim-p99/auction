@@ -1,4 +1,4 @@
- <?php
+<?php
 
 if (!isset($_POST['functionname']) || !isset($_POST['arguments'])) {
   return;
