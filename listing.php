@@ -13,7 +13,7 @@
     unset($_SESSION['success_message']);
   }
 
-
+  $user_id = $_SESSION['user_id'];
   // Get info from the URL:
   $item_id = $_GET['item_id'];
   $seller_id = null;
@@ -116,9 +116,16 @@
   
   // TODO: If the user has a session, use it to make a query to the database
   //       to determine if the user is already watching this item.
-  //       For now, this is hardcoded.
+  //       For now, this is hardcoded. 
   $has_session = true;
-  $watching = false;
+  
+  $query = $connection->prepare("SELECT watchlist_id FROM watchlist WHERE user_id = ? AND auction_ID = ?");
+  $query->bind_param("ii", $user_id, $auction_id);
+  $query->execute();
+  $query->store_result();
+  $watching = $query->num_rows > 0;
+  $query->close();
+
 ?>
 
 
@@ -136,8 +143,8 @@
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
-  if ($now < $end_time && $_SESSION['user_id']!==1):
-?>
+
+  if ($now < $end_time && $_SESSION['user_id']!==1): ?>
     <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
       <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
     </div>
@@ -191,7 +198,7 @@
 
 <?php include_once("footer.php")?>
 
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script> 
 // JavaScript functions: addToWatchlist and removeFromWatchlist.
 
@@ -202,22 +209,27 @@ function addToWatchlist(button) {
   // Sends item ID as an argument to that function.
   $.ajax('watchlist_funcs.php', {
     type: "POST",
-    data: {functionname: 'add_to_watchlist', arguments: [<?php echo($item_id);?>]},
+    data: {functionname: 'add_to_watchlist', arguments: [<?php echo($auction_id);?>]},
 
     success: 
       function (obj, textstatus) {
         // Callback function for when call is successful and returns obj
         console.log("Success");
-        var objT = obj.trim();
+        console.log("ajax raw response: ", obj);
+        //var objT = obj.trim();
+        var objT = JSON.parse(obj).status;
+        console.log("parsed status:", objT);
+
  
         if (objT == "success") {
           $("#watch_nowatch").hide();
           $("#watch_watching").show();
         }
         else {
-          var mydiv = document.getElementById("watch_nowatch");
-          mydiv.appendChild(document.createElement("br"));
-          mydiv.appendChild(document.createTextNode("Add to watch failed. Try again later."));
+          alert("Operation failed: " + objT);
+          /* var mydiv = document.getElementById("watch_nowatch"); */
+          /* mydiv.appendChild(document.createElement("br")); */
+          /* mydiv.appendChild(document.createTextNode("Add to watch failed. Try again later.")); */
         }
       },
 
@@ -234,22 +246,24 @@ function removeFromWatchlist(button) {
   // Sends item ID as an argument to that function.
   $.ajax('watchlist_funcs.php', {
     type: "POST",
-    data: {functionname: 'remove_from_watchlist', arguments: [<?php echo($item_id);?>]},
+    data: {functionname: 'remove_from_watchlist', arguments: [<?php echo($auction_id);?>]},
 
     success: 
       function (obj, textstatus) {
         // Callback function for when call is successful and returns obj
         console.log("Success");
-        var objT = obj.trim();
+        //var objT = obj.trim();
+        var objT = JSON.parse(obj).status;
  
         if (objT == "success") {
           $("#watch_watching").hide();
           $("#watch_nowatch").show();
         }
         else {
-          var mydiv = document.getElementById("watch_watching");
-          mydiv.appendChild(document.createElement("br"));
-          mydiv.appendChild(document.createTextNode("Watch removal failed. Try again later."));
+          alert("Operation failed: " + objT);
+          /* var mydiv = document.getElementById("watch_watching"); */
+          /* mydiv.appendChild(document.createElement("br")); */
+          /* mydiv.appendChild(document.createTextNode("Watch removal failed. Try again later.")); */
         }
       },
 
@@ -261,3 +275,6 @@ function removeFromWatchlist(button) {
 
 } // End of addToWatchlist func
 </script>
+
+
+
