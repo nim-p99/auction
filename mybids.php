@@ -1,12 +1,67 @@
 <?php require_once ("utilities.php")?>
 
 <div class="container">
+
+
+<?php
+  // This page is for showing a user the auction listings they've made.
+  // It will be pretty similar to browse.php, except there is no search bar.
+  // This can be started after browse.php is working with a database.
+  // Feel free to extract out useful functions from browse.php and put them in
+  // the shared "utilities.php" where they can be shared by multiple files.
+//TODO: check seller_id and extract username.
+
+$buyerID = $_SESSION['buyer_id'];
+  
+
+
+echo '<h2 class="my-3">My Bids</h2>';
+   //TODO: Check user's credentials (cookie/session).
+  
+  // TODO: Perform a query to pull up their auctions.
+
+  
+  // TODO: Loop through results and print them out as list items.
+  
+?>
+
+
+<?php
+
+  //preserve current URL
+$base_url = htmlspecialchars($_SERVER['PHP_SELF']);
+$current_params = $_GET;
+
+
+//VARIABLE INITIALISATION
+$filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
+$sort_by = $_GET['sort'] ?? 'hot'; //default to items that have lots of bids'
+$keyword = $_GET['keyword'] ?? '';
+if (!isset($_GET['page'])) {
+    $curr_page = 1;
+  }
+else {
+    $curr_page = $_GET['page'];
+}
+
+
+?>
+
+
 <div id="searchSpecs">
-<!-- When this form is submitted, this PHP page is what processes it.
-     Search/sort specs are passed to this page through parameters in the URL
-     (GET method of passing data to a page). -->
-<form method="get" action="mybids.php">
+<!-- Search specifications bar -->
+<form method="get" action="<?php echo $base_url; ?>">
+  <?php
+    foreach ($current_params as $key => $value) {
+      if (!in_array($key, ['keyword', 'cat', 'sort', 'page'])) {
+        echo '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+      }
+    }
+  ?>
+
+ 
   <div class="row">
+    <!-- SEARCH KEYWORD -->
     <div class="col-md-5 pr-0">
       <div class="form-group">
         <label for="keyword" class="sr-only">Search keyword:</label>
@@ -16,28 +71,81 @@
               <i class="fa fa-search"></i>
             </span>
           </div>
-          <input type="text" class="form-control border-left-0" id="keyword" placeholder="Search for anything">
+          <input type="text" class="form-control border-left-0" id="keyword" name= "keyword" placeholder="Search for anything" value ="<?php echo htmlspecialchars($keyword); ?>">
         </div>
       </div>
     </div>
+    <!-- end keyword search -->
+
+    
+    <!-- Category filter-->
     <div class="col-md-3 pr-0">
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
-        <select class="form-control" id="cat">
-          <option selected value="all">All categories</option>
-          <option value="fill">Fill me in</option>
-          <option value="with">with options</option>
-          <option value="populated">populated from a database?</option>
+        <select class="form-control" id="cat" name="cat">
+          <option value="all" <?php if ($filter_cat=='all') echo 'selected'; ?>>All Categories</option>
+          <?php
+            // Load categories with hierarchy from the database
+            $sql = "
+              SELECT c.category_id, c.category_name, c.parent_category
+              FROM category c
+              LEFT JOIN category p ON c.parent_category = p.category_id
+              ORDER BY
+                CASE WHEN c.parent_category IS NULL THEN c.category_name ELSE p.category_name END,
+                CASE WHEN c.parent_category IS NULL THEN '' ELSE c.category_name END
+            ";
+            $result = mysqli_query($connection, $sql);
+
+            if ($result) {
+              while ($row = mysqli_fetch_assoc($result)) {
+                $label = $row['category_name'];
+
+                // Indent child categories
+                if (!is_null($row['parent_category'])) {
+                  $label = '— ' . $label;
+                }
+
+                $selected = ($filter_cat == $row['category_id']) ? 'selected' : '';
+                echo '<option value="' . htmlspecialchars($row['category_id']) . '" ' . $selected . '>'
+                  . htmlspecialchars($label) .
+                  '</option>';
+              }
+            } else {
+              echo '<option disabled>Unable to load categories</option>';
+            }
+          ?>
         </select>
       </div>
     </div>
+
+
+     <!-- Sort by -->
     <div class="col-md-3 pr-0">
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
-        <select class="form-control" id="order_by">
-          <option selected value="pricelow">Price (low to high)</option>
-          <option value="pricehigh">Price (high to low)</option>
-          <option value="date">Soonest expiry</option>
+        <select class="form-control" id="order_by" name="sort">
+          <?php
+            $sort_options = [
+              'hot' => 'Hot items',
+              'date_asc' => 'Soonest expiry',
+              'date_dsc' => 'Latest expiry',
+              'pricelow' => 'Price (low-high)',
+              'pricehigh' => 'Price (high-low)',
+              'buy_now_asc' => 'Buy Now (low-high)',
+              'buy_now_dsc' => 'Buy Now (high-low)'
+            ];
+            foreach ($sort_options as $key => $label) {
+              $selected = ($sort_by == $key) ? 'selected' : '';
+              echo "<option value='$key' $selected>$label</option>";
+            }
+            ?>
+          <!--<option value="hot">Hot items</option>
+          <option value="date_asc">Soonest expiry</option>
+          <option value="date_dsc">Latest expiry</option>
+          <option value="pricelow">Price (low-high)</option>
+          <option value="pricehigh">Price (high-low)</option>
+          <option value="buy_now_asc">Buy Now (low-high)</option> 
+          <option value="buy_now_dsc">Buy Now (high-low)</option> -->
         </select>
       </div>
     </div>
@@ -45,85 +153,75 @@
       <button type="submit" class="btn btn-primary">Search</button>
     </div>
   </div>
+  <!-- end sort by -->
 </form>
-</div> <!-- end search specs bar -->
+</div> 
+<!-- end search specifications bar-->
 
 
 </div>
 
-<?php
-  // Retrieve these from the URL
-  if (!isset($_GET['keyword'])) {
-    // TODO: Define behavior if a keyword has not been specified.
-  }
-  else {
-    $keyword = $_GET['keyword'];
-  }
+<div class="container mt-5">
 
-  if (!isset($_GET['cat'])) {
-    // TODO: Define behavior if a category has not been specified.
-  }
-  else {
-    $category = $_GET['cat'];
-  }
-  
-  if (!isset($_GET['order_by'])) {
-    // TODO: Define behavior if an order_by value has not been specified.
-  }
-  else {
-    $ordering = $_GET['order_by'];
-  }
-  
-  if (!isset($_GET['page'])) {
-    $curr_page = 1;
-  }
-  else {
-    $curr_page = $_GET['page'];
-  }
+<!--------------------------------------------------------------
 
-  /* TODO: Use above values to construct a query. Use this query to 
-     retrieve data from the database. (If there is no form data entered,
-     decide on appropriate default value/default query to make. */
+!!!!!! TODO: If result set is empty, print an informative message. Otherwise...!!!! 
+
+ ---------------------------------------------------------------------------->
+
+
+<!----------------------------------------------------------------------------
+                          Listing auctions
+----------------------------------------------------------------------------->
+
+
+<div class="list-container">
+<?php 
+
+  // Construct the final query using the filter category and sort by
+  // need to change so only active auctions are shown
+  /* $final_query = " */
+  /*   SELECT * from auction AS a  */
+  /*   JOIN item AS i ON a.item_id = i.item_id */
+  /*   JOIN category AS c ON c.category_id = i.category_id  */
+  /*   WHERE a.seller_id = $seller_id"; */
+
   
-  /* For the purposes of pagination, it would also be helpful to know the
-     total number of results that satisfy the above query */
-  $num_results = 96; // TODO: Calculate me for real
+  $final_query = "
+    SELECT 
+      a.auction_id, a.start_bid, a.reserve_price,
+      a.buy_now_price, a.start_date_time, a.end_date_time,
+      i.item_id, i.title, i.description, i.photo_url, i.item_condition,
+      c.category_id, c.category_name,
+      COALESCE(MAX(b.amount), 0) AS highest_bid,
+      COUNT(b.bid_id) AS num_bids,
+      GREATEST(a.start_bid, COALESCE(MAX(b.amount), 0)) AS current_price
+    FROM auction AS a 
+    JOIN item AS i ON a.item_id = i.item_id
+    JOIN category AS c ON c.category_id = i.category_id
+    LEFT JOIN bids AS b ON b.auction_id = a.auction_id
+    WHERE b.buyer_id = $buyerID
+    ";
+  $final_query = filter_by_keyword($connection, $keyword, $final_query);
+  $final_query = filter_by_category($connection, $filter_cat,  $final_query);
+  $final_query .= " GROUP BY a.auction_id ";
+  $final_query = sort_by($sort_by, $final_query);
+  $auctions_to_list = mysqli_query($connection, $final_query);
+
+  // Use the function from utilities.php to print the listings
+  if (mysqli_num_rows($auctions_to_list) > 0) {
+    list_table_items($auctions_to_list);
+  } else {
+    echo "<p>You haven't placed any bids yet.</p>";
+  }
+ 
+  // For pagination & pagnation calculations
+  
+  $num_results = mysqli_num_rows($auctions_to_list); //96;
   $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
-
-<div class="container mt-5">
-
-<!-- TODO: If result set is empty, print an informative message. Otherwise... -->
-
-<ul class="list-group">
-
-<!-- TODO: Use a while loop to print a list item for each auction listing
-     retrieved from the query -->
-
-<?php
-  // Demonstration of what listings will look like using dummy data.
-  $item_id = "87021";
-  $title = "Dummy title";
-  $description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget rutrum ipsum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Phasellus feugiat, ipsum vel egestas elementum, sem mi vestibulum eros, et facilisis dui nisi eget metus. In non elit felis. Ut lacus sem, pulvinar ultricies pretium sed, viverra ac sapien. Vivamus condimentum aliquam rutrum. Phasellus iaculis faucibus pellentesque. Sed sem urna, maximus vitae cursus id, malesuada nec lectus. Vestibulum scelerisque vulputate elit ut laoreet. Praesent vitae orci sed metus varius posuere sagittis non mi.";
-  $current_price = 30;
-  $num_bids = 1;
-  $end_date = new DateTime('2020-09-16T11:00:00');
-  
-  // This uses a function defined in utilities.php
-  print_listing_li($item_id, $title, $description, $current_price, $num_bids, $end_date);
-  
-  $item_id = "516";
-  $title = "Different title";
-  $description = "Very short description.";
-  $current_price = 13.50;
-  $num_bids = 3;
-  $end_date = new DateTime('2020-11-02T00:00:00');
-  
-  print_listing_li($item_id, $title, $description, $current_price, $num_bids, $end_date);
-?>
-
-</ul>
+  </div>
 
 <!-- Pagination for results listings -->
 <nav aria-label="Search results pages" class="mt-5">
@@ -191,22 +289,4 @@
 
 
 
-
-
-<?php
-  // This page is for showing a user the auctions they've bid on.
-  // It will be pretty similar to browse.php, except there is no search bar.
-  // This can be started after browse.php is working with a database.
-  // Feel free to extract out useful functions from browse.php and put them in
-  // the shared "utilities.php" where they can be shared by multiple files.
-  
-  
-  // TODO: Check user's credentials (cookie/session).
-  
-  // TODO: Perform a query to pull up the auctions they've bidded on.
-  
-  // TODO: Loop through results and print them out as list items.
-
-
-?>
-
+<?php include_once("footer.php")?>

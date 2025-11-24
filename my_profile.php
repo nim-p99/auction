@@ -1,4 +1,5 @@
-<?php 
+<?php
+ob_start();
 include_once "header.php";
 include_once "utilities.php";
 
@@ -11,7 +12,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 $sections = [
     'buyer' => ['mybids', 'orders', 'viewed', 'watchlist'],
     'seller' => ['listings', 'completed'],
-    'account' => ['details', 'password', 'payment_info'],
+    'account' => ['details', 'password', 'address'],
     'messages' => ['inbox', 'sent'],
 ];
 
@@ -183,8 +184,8 @@ $seller_id = $_SESSION['seller_id']
                         href="my_profile.php?section=account&tab=password">Password Details</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php if ($current_tab == 'payment_info') echo 'active'; ?>" 
-                        href="my_profile.php?section=account&tab=payment_info">Payment Info</a>
+                        <a class="nav-link <?php if ($current_tab == 'address') echo 'active'; ?>" 
+                        href="my_profile.php?section=account&tab=address">Address Info</a>
                     </li>
                 </ul>
             </div>
@@ -205,15 +206,15 @@ $seller_id = $_SESSION['seller_id']
                       <?php include "password_details.php";?>
                     </div>
                     <!-- Account details Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'payment_info') echo 'show active'; ?>" 
-                          id="payment_info" role="tabpanel">
-                      <h5 class="card-title">Payemnt Info</h5>
-                      <p class="card-text"> Here you can view/change your payment information.</p>
-                      <?php include "payment_info.php";?>
+                    <div class="tab-pane fade <?php if ($current_tab == 'address') echo 'show active'; ?>" 
+                          id="address" role="tabpanel">
+                      <h5 class="card-title">Address Info</h5>
+                      <p class="card-text"> Here you can view/change your address information.</p>
+                      <?php include "address_details.php";?>
                     </div>
-                </div> <!-- end seller tab content -->
+                </div> <!-- end account tab content -->
             </div> <!-- end card body -->
-        <?php endif; ?> <!-- end seller dashboard section -->
+        <?php endif; ?> <!-- end account dashboard section -->
 
 
 
