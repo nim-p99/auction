@@ -7,7 +7,12 @@
   if (!isset($_SESSION['account_type']) || $_SESSION['account_type'] != 'seller') {
     header('Location: browse.php');
   }
-*/
+ */
+
+//$_SESSION['seller_id'] will be null, if user has not 
+//listed any items before. If user clicks submit, we should
+//validate data first and then add to seller table 
+//and then add auction to auction table  
 ?>
 
 <div class="container">
@@ -28,29 +33,61 @@
         <div class="form-group row">
           <label for="auctionTitle" class="col-sm-2 col-form-label text-right">Title of auction</label>
           <div class="col-sm-10">
-            <input type="text" class="form-control" id="auctionTitle" placeholder="e.g. Black mountain bike">
+            <input type="text" class="form-control" id="auctionTitle" name="auctionTitle" placeholder="e.g. Black mountain bike">
             <small id="titleHelp" class="form-text text-muted"><span class="text-danger">* Required.</span> A short description of the item you're selling, which will display in listings.</small>
           </div>
         </div>
         <div class="form-group row">
           <label for="auctionDetails" class="col-sm-2 col-form-label text-right">Details</label>
           <div class="col-sm-10">
-            <textarea class="form-control" id="auctionDetails" rows="4"></textarea>
+            <textarea class="form-control" id="auctionDetails" name="auctionDetails" rows="4"></textarea>
             <small id="detailsHelp" class="form-text text-muted">Full details of the listing to help bidders decide if it's what they're looking for.</small>
           </div>
         </div>
         <div class="form-group row">
           <label for="auctionCategory" class="col-sm-2 col-form-label text-right">Category</label>
           <div class="col-sm-10">
-            <select class="form-control" id="auctionCategory">
-              <option selected>Choose...</option>
-              <option value="fill">Fill me in</option>
-              <option value="with">with options</option>
-              <option value="populated">populated from a database?</option>
+            <select class="form-control" id="auctionCategory" name="auctionCategory">
+              <option value="">Choose...</option>
+              <?php
+                // Load categories from the database
+                /* $sql = "SELECT category_id, category_name, parent_category  */
+                /*         FROM category */
+                /*         ORDER BY parent_category IS NULL DESC, category_name"; */ 
+                $sql = "
+                  SELECT c.category_id, c.category_name, c.parent_category
+                  FROM category c
+                  LEFT JOIN category p ON c.parent_category = p.category_id
+                  ORDER BY
+                    CASE WHEN c.parent_category IS NULL THEN c.category_name ELSE p.category_name END,
+                    CASE WHEN c.parent_category IS NULL THEN '' ELSE c.category_name END;
+                  ";
+                $result = mysqli_query($connection, $sql);
+
+                if ($result) {
+                  while ($row = mysqli_fetch_assoc($result)) {
+                    $label = $row['category_name'];
+
+                    # indent chld categories
+                    if (!is_null($row['parent_category'])) {
+                      $label = '— ' . $label;
+                    }
+
+                    echo '<option value="' . htmlspecialchars($row['category_id']) . '">'
+                       . htmlspecialchars($label) .
+                       '</option>';
+                  }
+                } else {
+                  echo '<option disabled>Unable to load categories</option>';
+                }
+              ?>
             </select>
-            <small id="categoryHelp" class="form-text text-muted"><span class="text-danger">* Required.</span> Select a category for this item.</small>
+            <small id="categoryHelp" class="form-text text-muted">
+              <span class="text-danger">* Required.</span> Select a category for this item.
+            </small>
           </div>
         </div>
+
         <div class="form-group row">
           <label for="auctionStartPrice" class="col-sm-2 col-form-label text-right">Starting price</label>
           <div class="col-sm-10">
@@ -58,11 +95,14 @@
               <div class="input-group-prepend">
                 <span class="input-group-text">£</span>
               </div>
-              <input type="number" class="form-control" id="auctionStartPrice">
+              <input type="number" class="form-control" id="auctionStartPrice" name="auctionStartPrice" step="0.01">
             </div>
-            <small id="startBidHelp" class="form-text text-muted"><span class="text-danger">* Required.</span> Initial bid amount.</small>
+            <small id="startBidHelp" class="form-text text-muted">
+              <span class="text-danger">* Required.</span> Initial bid amount.
+            </small>
           </div>
         </div>
+
         <div class="form-group row">
           <label for="auctionReservePrice" class="col-sm-2 col-form-label text-right">Reserve price</label>
           <div class="col-sm-10">
@@ -70,18 +110,24 @@
               <div class="input-group-prepend">
                 <span class="input-group-text">£</span>
               </div>
-              <input type="number" class="form-control" id="auctionReservePrice">
+              <input type="number" class="form-control" id="auctionReservePrice" name="auctionReservePrice" step="0.01">
             </div>
-            <small id="reservePriceHelp" class="form-text text-muted">Optional. Auctions that end below this price will not go through. This value is not displayed in the auction listing.</small>
+            <small id="reservePriceHelp" class="form-text text-muted">
+              Optional. Auctions that end below this price will not go through. This value is not displayed in the auction listing.
+            </small>
           </div>
         </div>
+
         <div class="form-group row">
           <label for="auctionEndDate" class="col-sm-2 col-form-label text-right">End date</label>
           <div class="col-sm-10">
-            <input type="datetime-local" class="form-control" id="auctionEndDate">
-            <small id="endDateHelp" class="form-text text-muted"><span class="text-danger">* Required.</span> Day for the auction to end.</small>
+            <input type="datetime-local" class="form-control" id="auctionEndDate" name="auctionEndDate">
+            <small id="endDateHelp" class="form-text text-muted">
+              <span class="text-danger">* Required.</span> Day for the auction to end.
+            </small>
           </div>
         </div>
+
         <button type="submit" class="btn btn-primary form-control">Create Auction</button>
       </form>
     </div>
@@ -89,6 +135,5 @@
 </div>
 
 </div>
-
 
 <?php include_once("footer.php")?>
