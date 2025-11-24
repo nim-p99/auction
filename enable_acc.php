@@ -58,10 +58,6 @@ if (isset($_POST['user_id']) && isset($_POST['action'])) {
             
                 mail($user_email, $subject, $message, $headers);
             }
-
-        } else {
-            $_SESSION['message'] = "Error updating account status: " . $stmt->error;
-            $_SESSION['message_type'] = 'danger';
         }
         $query->close();
         header("Location: admin_accs.php");

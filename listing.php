@@ -47,8 +47,18 @@
   $query->execute();
   $auction = $query->get_result()->fetch_assoc();
 
+    // calculates / converts time
+  $get_end_time = $auction["end_date_time"];
+  $end_time = new DateTime($get_end_time);
+  
+  //testing, remove last line to stop testing!!
+  $now= new DateTime();
+  $now->modify("+5 years");
 
-  // get highest bid for auction 
+  
+  
+
+  // get highest bid 
   $highest_bid_sql = "
     SELECT MAX(amount) AS highest_bid
     FROM bids
@@ -66,14 +76,34 @@
     $highest_bid = 0;
   }
 
-  // calculates / converts time
-  $get_end_time = $auction["end_date_time"];
-  $end_time = new DateTime($get_end_time);
-  $now = new DateTime();
-  ?>
+  // get winning bidder if auction ended
+  $winning_bidder = null;
+  if ($now>$end_time && $highest_bid > 0) { // added 0 to make sure at least 1 bid placed
+    $winner_id_query =$connection->prepare("
+      SELECT buyer_id
+      FROM bids
+      Where AUCTION_ID =? AND AMOUNT =?
+      ORDER BY date asc
+      LIMIT 1
+    ");
+  $winner_id_query->bind_param("id", $auction_id, $highest_bid);
+  $winner_id_query->execute();
+  $winner_result = $winner_id_query->get_result();
+    
+    if ($winner_row = $winner_result->fetch_assoc()) {
+        $winning_bidder_id = $winner_row['buyer_id'];
+  // TESTING, delete once Luke starts notifications
+    if ($winning_bidder_id == $_SESSION['buyer_id']) {
+        echo "<p style='color: green;'>You are the winner of this auction (TEST MESSAGE).</p>";
+    } else {
+        echo "<p style='color: red;'>You are NOT the winner of this auction (TEST MESSAGE).</p>";
+    }
+  }
+}
+    
 
 
-<?php
+
   // TODO: Note: Auctions that have ended may pull a different set of data,
   //       like whether the auction ended in a sale or was cancelled due
   //       to lack of high-enough bids. Or maybe not.
@@ -113,6 +143,7 @@
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
+
   if ($now < $end_time && $_SESSION['user_id']!==1): ?>
     <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
       <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
@@ -142,18 +173,20 @@
     <p class="lead">Current bid: £<?php echo(number_format($highest_bid, 2)) ?></p>
 
     <!-- Bidding form -->
-    <form method="POST" action="place_bid.php">
-      <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
-      <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
-      <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
-      <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text">£</span>
+    <?php if($_SESSION['user_id']!==1){ ?>
+      <form method="POST" action="place_bid.php">
+        <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
+        <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
+        <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">£</span>
+          </div>
+        <input type="number" class="form-control" id="bid" name="bid" step="0.1" required>
         </div>
-	    <input type="number" class="form-control" id="bid" name="bid" step="0.1" required>
-      </div>
-      <button type="submit" class="btn btn-primary form-control">Place bid</button>
-    </form>
+        <button type="submit" class="btn btn-primary form-control">Place bid</button>
+      </form>
+    <?php }?>
 <?php endif ?>
 
   

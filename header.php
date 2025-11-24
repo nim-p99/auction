@@ -133,9 +133,10 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
   // current status (session).
   if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) {
     echo '<div class="d-flex align-items-center">';
-    echo '<a class="nav-link" href="my_profile.php">My Profile</a>';
     echo '<a class="nav-link" href="logout.php">Logout</a>';
-
+    if ($_SESSION['user_id'] !== 1){
+      echo '<a class="nav-link" href="my_profile.php">My Profile</a>';
+    }
     echo '</div>'; 
   }
   else {
