@@ -171,29 +171,20 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
     </li>
     <li class="nav-item mx-1">
         <a class="nav-link" href="buyer.php?tab=mybids.php">My Bids</a>
-      </li>
-    <li class="nav-item mx-1">
-        <a class="nav-link" href="buyer.php?tab=recommendations.php">Recommended</a>
-      </li>
-    <li class="nav-item mx-1">
-        <a class="nav-link" href="buyer.php?tab=watchlist.php">Watchlist</a>
-      </li>
-    <li class="nav-item mx-1">
-        <a class="nav-link" href="buyer.php?tab=recentlyviewed.php">Recently Viewed</a>
-      </li>
-    <li class="nav-item mx-1">
-        <a class="nav-link" href="buyer.php?tab=myorders.php">My Orders</a>
-      </li>
-    <li class="nav-item mx-1">
-        <a class="nav-link" href="my_profile.php">My Profile</a>
-      </li>
-      ');
+      </li> 
+    <li class="nav-item ml-3">
+        <a class="nav-link btn border-light" href="create_auction.php">+ Create auction</a>
+      </li>'
+      );
     }
     if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'seller') {
     echo('
     
     <li class="nav-item mx-1">
         <a class="nav-link" href="seller.php?tab=mylistings.php">My Listings</a>
+      </li>
+    <li class="nav-item mx-1">
+        <a class="nav-link" href="buyer.php?tab=mybids.php">My Bids</a>
       </li>
     <li class="nav-item ml-3">
         <a class="nav-link btn border-light" href="create_auction.php">+ Create auction</a>
