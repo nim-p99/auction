@@ -83,7 +83,7 @@
   $winning_bidder = null;
   if ($now>$end_time && $highest_bid > 0) { // added 0 to make sure at least 1 bid placed
     $winner_id_query =$connection->prepare("
-      SELECT bd.amount, bd.buyer_id, u.email, u.first_name, i.title, a.mail_sent
+      SELECT bd.amount, bd.buyer_id, u.email, u.first_name, i.title, a.mail_sent, bd.bid_id
       FROM bids AS bd
       JOIN buyer AS b ON b.buyer_id = bd.buyer_id
       JOIN users AS u ON b.user_id = u.user_id
@@ -96,7 +96,7 @@
   $winner_id_query->bind_param("id", $auction_id, $highest_bid);
   $winner_id_query->execute();
   $winner_result = $winner_id_query->get_result();
-    
+  
     if (($winner_row = $winner_result->fetch_assoc()) && $winner_row['mail_sent'] !== 1) {
         $winning_bidder_id = $winner_row['buyer_id'];
         $winning_bidder_name = ucfirst($winner_row['first_name']);
@@ -125,8 +125,13 @@
           $update_mail_query->execute();
           $update_mail_query->close();
         }
-
-
+  #----- transaction update -----#
+  $trans_query = $connection->prepare("
+        INSERT INTO transaction (bid_id) 
+        VALUES (?)");
+      $trans_query-> bind_param("i", $winner_row['bid_id']);
+      $trans_query->execute();
+      $trans_query->close(); 
     }
 }
     
