@@ -259,8 +259,16 @@
 <div class="row"> <!-- Row #3 with auction description + bidding info -->
   <div class="col-sm-8"> <!-- blank left col--></div>
 
-  <div class="col-sm-4"> <!-- Right col with bidding info -->
-    <p><strong>Buy Now Price:</strong> £<?php echo number_format($auction["buy_now_price"], 2); ?></p>
+  <!-- Right col with bidding info -->
+<div class="col-sm-4"> <!-- Only shows buy now price if one is set and auction still live -->
+    <?php if (!is_null($auction["buy_now_price"]) && $now < $end_time): ?>
+      <p></p>
+      <form method="POST" action="buy_now.php" onsubmit="return confirm('Are you sure you want to buy this item now for £<?php echo number_format($auction['buy_now_price'], 2); ?>?');">
+        <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
+        <button type="submit" class="btn-info btn-sm">Buy Now at: £<?php echo number_format($auction["buy_now_price"], 2); ?></button>
+      </form>
+    <?php endif; ?>
+   
     <!-- check if auction ended -->
     <p><strong>
 <?php if ($now > $end_time): ?>
