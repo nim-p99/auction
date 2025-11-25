@@ -30,6 +30,7 @@ $item_id = (int)$_POST['item_id'] ?? null;
 /* echo '</pre>'; */
 /* exit(); */
 
+
 // If bid amount missing = error
 if (!is_numeric($bid_amount) || $bid_amount <= 0) {
     $_SESSION["error_message"]= " Please enter a valid bid amount!";
@@ -37,6 +38,8 @@ if (!is_numeric($bid_amount) || $bid_amount <= 0) {
     exit();
 } // could add error message if user enters a -#????
 
+
+//TODO: check if user is trying to bid on their own item.
 
 // checking bid is higher than highest bid (current bid)
 if ($bid_amount <= $highest_bid) {
@@ -57,6 +60,25 @@ if (!$auction_data || new DateTime() > new DateTime($auction_data['end_date_time
   exit();
 }
 $query->close();
+
+$query = $connection->prepare("
+  SELECT s.user_id AS seller_user_id
+  FROM auction AS a 
+  JOIN seller AS s ON a.seller_id = s.seller_id 
+  WHERE a.auction_id = ?
+");
+$query->bind_param("i", $auction_id);
+$query->execute();
+$query_result = $query->get_result();
+$query_row = $query_result->fetch_assoc();
+$query->close();
+
+if ($query_row && $query_row['seller_user_id'] == $_SESSION['user_id']) {
+  $_SESSION['error_message'] = "You cannot place a bid on your own auction.";
+  header("Location: listing.php?item_id=" . $item_id);
+  exit();
+}
+
 
 // ------- OUTBID NOTIFICATION LOGIC-------- //
 $auction_title_query = $connection->prepare("
