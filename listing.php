@@ -157,6 +157,41 @@
           mail($to, $subject, $message, $headers);
         }
         $seller_query->close();
+
+
+    
+    #-----sending updates to people watching it
+    $watchlist_query= $connection->prepare("
+        SELECT u.email, u.first_name
+        FROM watchlist AS w
+        JOIN users AS u ON w.user_id = u.user_id
+        JOIN auction AS a ON w.auction_id = a.auction_id
+        WHERE w.auction_id = ?
+    ");
+    $watchlist_query-> bind_param("i", $auction_id);
+    $watchlist_query-> execute();
+    $watchlist_result = $watchlist_query->get_result();
+    
+    while ($watcher_row=$watchlist_result->fetch_assoc()){
+        $watcher_name = ucfirst($watcher_row['first_name']);
+        $to = $watcher_row['email'];
+        $message ="
+        To {$watcher_name},
+
+        Someone won the auction for '{$winning_bidder_item}' that you are watching. With a bid of £{$winning_bidder_bid_amount} on 
+        
+        If you wish to stop recieving updates, please remove this item from your watchlist.
+
+        From The Auction_Site
+        ";
+        $subject = "Update: New activity on '{$winning_bidder_item}'";
+        $headers = "From: the auction_site";
+        $headers .= "Content-type: text/plain; charset=UTF-8";
+        mail($to, $subject, $message, $headers);
+    $watchlist_query->close();
+    }
+
+
     #----- transaction update -----#
     $trans_query = $connection->prepare("
           INSERT INTO transaction (bid_id) 
