@@ -96,7 +96,6 @@ $query->bind_param("iid", $auction_id, $buyer_id, $bid_amount);
 
 
 if (!$query->execute()) {
-    die("Insert failed: " . $query->error);
     $_SESSION['error_message'] = "Failed to place bid. Please try again.";
     header("Location: listing.php?item_id=" . $item_id);
     exit();
@@ -150,11 +149,8 @@ else{
         $headers = "From: the auction_site";
         $headers .= "Content-type: text/plain; charset=UTF-8";
         mail($to, $subject, $message, $headers);
-    $watchlist_query->close();
-
-
-
-    }
+      }
+      $watchlist_query->close();
 }
 
 
@@ -163,10 +159,9 @@ else{
 
 
 // Exitoooo!
+$query->close();
 $_SESSION['success_message'] = "Your bid of £" . number_format($bid_amount, 2) . " has been placed successfully!";
 header("Location: listing.php?item_id=" . $item_id);
-
-$query->close();
 
 exit();
 ?>

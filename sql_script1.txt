@@ -1,0 +1,388 @@
+DROP DATABASE IF EXISTS auction_site;
+
+CREATE DATABASE auction_site
+  DEFAULT CHARACTER SET utf8
+  DEFAULT COLLATE utf8_general_ci;
+
+USE auction_site;
+
+DROP USER IF EXISTS 'auctionadmin';
+CREATE USER 'auctionadmin' IDENTIFIED BY 'adminpassword';
+GRANT SELECT, UPDATE, INSERT, DELETE ON auction_site.* TO 'auctionadmin';
+FLUSH PRIVILEGES;
+
+-- TABLES
+CREATE TABLE address (
+  address_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  address_line1 VARCHAR(50) NOT NULL,
+  address_line2 VARCHAR(50),
+  city VARCHAR(30) NOT NULL,
+  postal_code VARCHAR(15) NOT NULL 
+) ENGINE=InnoDB;
+
+CREATE TABLE users (
+  user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  username VARCHAR(30) NOT NULL UNIQUE,
+  acc_active BOOLEAN NOT NULL DEFAULT TRUE,
+  first_name VARCHAR(30) NOT NULL,
+  family_name VARCHAR(30) NOT NULL,
+  phone_number VARCHAR(15) DEFAULT NULL,
+  address_id INT UNSIGNED DEFAULT NULL,
+  FOREIGN KEY (address_id) REFERENCES address(address_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE admin (
+  admin_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL UNIQUE,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE seller (
+  seller_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL UNIQUE,
+  avg_seller_rating DECIMAL(3,2) DEFAULT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE buyer (
+  buyer_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL UNIQUE,
+  avg_buyer_rating DECIMAL(3,2) DEFAULT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE category (
+  category_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_name VARCHAR(100) NOT NULL UNIQUE,
+  parent_category INT UNSIGNED NULL,
+  FOREIGN KEY (parent_category) REFERENCES category(category_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE item (
+  item_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_id INT UNSIGNED NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  description TEXT NOT NULL,
+  photo_url VARCHAR(512),
+  item_condition VARCHAR(30) NOT NULL,
+  FOREIGN KEY (category_id) REFERENCES category(category_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE auction (
+  auction_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  seller_id INT UNSIGNED NOT NULL,
+  item_id INT UNSIGNED NOT NULL UNIQUE,
+  start_bid DECIMAL(10,2) NOT NULL,
+  reserve_price DECIMAL(10,2),
+  buy_now_price DECIMAL(10,2),
+  start_date_time DATETIME NOT NULL,
+  end_date_time DATETIME NOT NULL,
+  FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
+  FOREIGN KEY (item_id) REFERENCES item(item_id),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  main_sent BOOLEAN NOT NULL DEFAULT FALSE
+) ENGINE=InnoDB;
+
+CREATE TABLE watchlist (
+  watchlist_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  auction_id INT UNSIGNED NOT NULL,
+  UNIQUE KEY (user_id, auction_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (auction_id) REFERENCES auction(auction_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE bids (
+  bid_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  buyer_id INT UNSIGNED NOT NULL,
+  auction_id INT UNSIGNED NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  date DATETIME NOT NULL,
+  FOREIGN KEY (buyer_id) REFERENCES buyer(buyer_id),
+  FOREIGN KEY (auction_id) REFERENCES auction(auction_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE message (
+  message_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  message TEXT NOT NULL,
+  seller_id INT UNSIGNED NOT NULL,
+  buyer_id INT UNSIGNED NOT NULL,
+  date DATETIME NOT NULL,
+  FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
+  FOREIGN KEY (buyer_id) REFERENCES buyer(buyer_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE transaction (
+  transaction_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  bid_id INT UNSIGNED NOT NULL,
+  seller_rating DECIMAL(3,2) NULL,
+  seller_comments TEXT NOT NULL,
+  buyer_rating DECIMAL(3,2) NULL,
+  buyer_comments TEXT NULL,
+  FOREIGN KEY (bid_id) REFERENCES bids(bid_id)
+) ENGINE=InnoDB;
+
+
+-- BASE SAMPLE DATA (original + expanded) - consistent ordering for FKs
+
+-- Addresses (1..15)
+INSERT INTO address (address_id, address_line1, address_line2, city, postal_code) VALUES
+(1, '123 Main St', NULL, 'London', 'E1 1AA'),
+(2, '456 Oak Rd', 'Flat 2B', 'Manchester', 'M2 2BB'),
+(3, '789 Pine Ave', NULL, 'Birmingham', 'B3 3CC'),
+(4, '12 Baker St', NULL, 'London', 'W1 1AB'),
+(5, '8 Fleet Rd', 'Apt 5', 'Brighton', 'BN1 1AA'),
+(6, '22 Station Rd', NULL, 'Leeds', 'LS1 2BB'),
+(7, '3 Church Ln', NULL, 'Oxford', 'OX1 3CC'),
+(8, '45 Market St', 'Unit 3', 'Bristol', 'BS1 4DD'),
+(9, '7 River View', NULL, 'Glasgow', 'G1 5EE'),
+(10, '99 High St', 'Flat 10', 'Newcastle', 'NE1 6FF'),
+(11, '30 Queens Rd', NULL, 'Liverpool', 'L1 7GG'),
+(12, '55 King Ave', NULL, 'Sheffield', 'S1 8HH'),
+(13, '18 Grove Park', NULL, 'Leicester', 'LE1 9II'),
+(14, '200 Canal St', 'Apt 4', 'Nottingham', 'NG1 0JJ'),
+(15, '6 Elm Terrace', NULL, 'Cardiff', 'CF1 1KK');
+
+-- Users (explicit user_id 1..25)
+-- kept original hashed passwords for first 5 users, placeholder hashes for new users
+INSERT INTO users (user_id, email, password, username, acc_active, first_name, family_name, phone_number, address_id) VALUES
+(1, 'admin@auction.com', '$2y$10$xn7.XhjX6nwS8FgM4SKyBOoTHJls4qUr3B/QBeezkz3..ZVyjQjc.', 'AdminUser', TRUE, 'Adam', 'Smith', '07123456789', 1),  -- admin
+(2, 'seller1@shop.com', '$2y$10$St7f0E.UlzXPfyPl1NXL6.Ia49fRjLwjHr1COU0ieqKKqWKjpNLCC', 'ProSeller', TRUE, 'Nim', 'Johnson', NULL, NULL),
+(3, 'seller2@shop.com', '$2y$10$D8BcCDpFn3GLplPaaxwsbeackuvsKmIGHb4xS4Zefpl10AsK3qpkO', 'ArtisanGoods', TRUE, 'Armando', 'Brown', '07234567890', 2),
+(4, 'buyer1@mail.com', '$2y$10$.HupXbqORBStQcmdguxErut5CGWsy3GpzfWs1OgE2FSz5hMYuBXc.', 'HighBidder', TRUE, 'Luke', 'Prince', NULL, NULL),
+(5, 'buyer2@mail.com', '$2y$10$BC1SABu52MGtTlLYWvr1f.5cacRJ3YFnXRZEmjzIZlp9tuM7sKXzq', 'BargainHunter', TRUE, 'Francesca', 'Adams', '07345678901', 3),
+
+(6, 'seller3@shop.com', '$2y$10$placeholderhash1', 'VintageVin', TRUE, 'Vince', 'Taylor', '07400111222', 4),
+(7, 'seller4@shop.com', '$2y$10$placeholderhash2', 'GadgetGal', TRUE, 'Gina', 'Lee', '07400111333', 5),
+(8, 'seller5@shop.com', '$2y$10$placeholderhash3', 'RetroRick', TRUE, 'Rick', 'Morris', NULL, 6),
+(9, 'seller6@shop.com', '$2y$10$placeholderhash4', 'CraftyClare', TRUE, 'Clare', 'Hughes', '07400111444', 7),
+(10,'seller7@shop.com', '$2y$10$placeholderhash5', 'ArtisanAli', TRUE, 'Ali', 'Khan', NULL, 8),
+
+(11,'buyer3@mail.com', '$2y$10$placeholderhash6', 'BiddyBuyer', TRUE, 'Beth', 'Green', '07500111555', 9),
+(12,'buyer4@mail.com', '$2y$10$placeholderhash7', 'SneakyBid', TRUE, 'Sam', 'Walker', NULL, 10),
+(13,'buyer5@mail.com', '$2y$10$placeholderhash8', 'CollectorCarl', TRUE, 'Carl', 'Rogers', '07500111666', 11),
+(14,'buyer6@mail.com', '$2y$10$placeholderhash9', 'DealDiva', TRUE, 'Diane', 'Ross', NULL, 12),
+(15,'user_extra1@mail.com', '$2y$10$placeholderhash10', 'UserOne', TRUE, 'Ethan', 'Ford', NULL, 13),
+
+(16,'user_extra2@mail.com', '$2y$10$placeholderhash11', 'UserTwo', TRUE, 'Farah', 'Singh', '07500111777', 14),
+(17,'user_extra3@mail.com', '$2y$10$placeholderhash12', 'UserThree', TRUE, 'Gordon', 'Bell', NULL, NULL),
+(18,'user_extra4@mail.com', '$2y$10$placeholderhash13', 'UserFour', TRUE, 'Hannah', 'Price', '07500111888', 15),
+(19,'seller8@shop.com', '$2y$10$placeholderhash14', 'MakerMaya', TRUE, 'Maya', 'Patel', NULL, NULL),
+(20,'buyer7@mail.com', '$2y$10$placeholderhash15', 'BargainBen', TRUE, 'Ben', 'Cole', '07500111999', NULL),
+
+(21,'buyer8@mail.com', '$2y$10$placeholderhash16', 'SilentSteve', TRUE, 'Steve', 'Irwin', NULL, NULL),
+(22,'seller9@shop.com', '$2y$10$placeholderhash17', 'PhonePhil', TRUE, 'Phil', 'Brown', '07400112000', NULL),
+(23,'buyer9@mail.com', '$2y$10$placeholderhash18', 'AvidAva', TRUE, 'Ava', 'Kim', NULL, NULL),
+(24,'user_extra5@mail.com', '$2y$10$placeholderhash19', 'GuestGuy', TRUE, 'Gaby', 'Lopez', NULL, NULL),
+(25,'seller10@shop.com','$2y$10$placeholderhash20', 'FancyFran', TRUE, 'Fran', 'Young', '07400112111', NULL);
+
+-- Admin (admin user 1) - admins must not have buyer/seller rows
+INSERT INTO admin (admin_id, user_id) VALUES (1, 1);
+
+-- Sellers: seller_id 1..10 mapped to user_ids that also will have buyer entries (sellers are also buyers)
+INSERT INTO seller (seller_id, user_id, avg_seller_rating) VALUES
+(1, 2, 4.80),
+(2, 3, 4.25),
+(3, 6, 4.50),
+(4, 7, 4.10),
+(5, 8, 4.60),
+(6, 9, 4.30),
+(7, 10,4.70),
+(8, 19,4.20),
+(9, 22,4.00),
+(10,25,4.55);
+
+-- Buyers: buyer_id 1..15 mapped to various user_ids.
+-- IMPORTANT: every seller's user_id appears here once (so sellers are also buyers), and there are extra buyers with no seller row.
+INSERT INTO buyer (buyer_id, user_id, avg_buyer_rating) VALUES
+(1, 2, 4.75),   -- maps to seller user 2
+(2, 3, 4.20),   -- maps to seller user 3
+(3, 4, 5.00),   -- original buyer user 4 (buyer-only)
+(4, 5, 4.50),   -- original buyer user 5 (buyer-only)
+(5, 6, 4.40),   -- maps to seller user 6
+(6, 7, 4.25),   -- maps to seller user 7
+(7, 8, 4.60),   -- maps to seller user 8
+(8, 9, 4.05),   -- maps to seller user 9
+(9, 10,4.00),   -- maps to seller user 10
+(10,11,4.20),   -- buyer-only (user 11)
+(11,12,4.15),   -- buyer-only (user 12)
+(12,13,4.45),   -- buyer-only (user 13)
+(13,19,4.10),   -- maps to seller user 19
+(14,22,4.30),   -- maps to seller user 22
+(15,25,4.55);   -- maps to seller user 25
+
+-- Categories (1..20)
+INSERT INTO category (category_id, category_name, parent_category) VALUES
+(1, 'Electronics', NULL),
+(2, 'Home & Garden', NULL),
+(3, 'Vintage Collectibles', NULL),
+(4, 'Laptops', 1),
+(5, 'Smartphones', 1),
+(6, 'Artwork', 3),
+(7, 'Furniture', 2),
+(8, 'Cameras', 1),
+(9, 'TV & Video', 1),
+(10, 'Kitchen Appliances', 2),
+(11, 'Garden Tools', 2),
+(12, 'Coins & Stamps', 3),
+(13, 'Posters', 3),
+(14, 'Gaming', 1),
+(15, 'Wearables', 1),
+(16, 'Handmade', NULL),
+(17, 'Jewellery', NULL),
+(18, 'Musical Instruments', NULL),
+(19, 'Books', NULL),
+(20, 'Toys', NULL);
+
+-- Items (explicit ids 101..125)
+INSERT INTO item (item_id, category_id, title, description, photo_url, item_condition) VALUES
+(101, 4, 'Mint Condition Laptop X1', 'High-performance laptop, barely used.', 'url/laptop_x1.jpg', 'New'),
+(102, 6, '1920s Art Deco Poster', 'Original print from Paris, framed.', 'url/art_deco.jpg', 'Used - Good'),
+(103, 7, 'Mid-Century Modern Chair', 'Unique swivel chair, excellent upholstery.', 'url/chair_mcm.jpg', 'Used - Fair'),
+(104, 5, 'iphone 15 pro max', 'space grey, 256gb, slightly cracked screen', 'url/iphone.jpg', 'Used - Fair'),
+(105, 5, 'iphone 17 pro max', 'red, 256gb, slightly cracked screen', 'url/iphone.jpg', 'Used - Fair'),
+(106, 8, 'Canon DSLR 5D', 'Used, good condition, includes 50mm lens', 'url/canon5d.jpg', 'Used - Good'),
+(107, 9, '42\" Smart TV', 'Full HD, minor bezel mark', 'url/tv42.jpg', 'Used - Fair'),
+(108, 10,'KitchenAid Mixer', 'Red, near-new, used once', 'url/mixer.jpg', 'New'),
+(109, 11,'Lawn Mower', 'Electric lawn mower, serviced recently', 'url/mower.jpg', 'Used - Good'),
+(110, 12,'Rare Coin Set 1950s', 'Collection of 10 coins in good condition', 'url/coins.jpg', 'Used - Good'),
+(111, 13,'Rock Concert Poster 1978', 'Original poster, slight fold', 'url/poster78.jpg', 'Used - Good'),
+(112, 14,'PS5 Console', 'With one controller and extra game', 'url/ps5.jpg', 'Used - Good'),
+(113, 15,'Fitness Tracker', 'Like new, still in box', 'url/tracker.jpg', 'New'),
+(114, 16,'Handmade Pottery Bowl', 'Glazed, one-of-a-kind', 'url/pottery.jpg', 'New'),
+(115, 17,'Gold Necklace', '9k gold, never worn', 'url/necklace.jpg', 'New'),
+(116, 18,'Acoustic Guitar', 'Slight wear, recently restrung', 'url/guitar.jpg', 'Used - Fair'),
+(117, 19,'First Edition Novel', 'Collector edition, dust jacket present', 'url/book.jpg', 'Used - Good'),
+(118, 20,'Retro Toy Robot', 'Wind-up robot, good condition', 'url/robot.jpg', 'Used - Fair'),
+(119, 4, 'Lightweight Ultrabook Z3', 'Slim, good battery life', 'url/ultrabook.jpg', 'Used - Good'),
+(120, 5, 'Galaxy Phone S', '256GB, working, small scratch', 'url/galaxy.jpg', 'Used - Good'),
+(121, 6, 'Signed Print - Local Artist', 'Limited edition, framed', 'url/print.jpg', 'Used - Good'),
+(122, 7, 'Vintage Coffee Table', 'Solid wood, restored', 'url/table.jpg', 'Used - Good'),
+(123, 1, 'Bluetooth Speaker', 'Portable, water resistant', 'url/speaker.jpg', 'New'),
+(124, 2, 'Garden Bench', 'Seating for two, teak', 'url/bench.jpg', 'Used - Fair'),
+(125, 3, 'Antique Vase', 'Porcelain, some crazing', 'url/vase.jpg', 'Used - Fair');
+
+-- Auctions (501..525) - seller_id references seller table (1..10)
+INSERT INTO auction (auction_id, seller_id, item_id, start_bid, reserve_price, buy_now_price, start_date_time, end_date_time, is_active, main_sent) VALUES
+(501, 1, 101, 500.00, 750.00, 999.99, '2025-11-01 10:00:00', '2025-11-08 10:00:00', FALSE, FALSE),
+(502, 2, 102, 100.00, 200.00, NULL, '2025-11-12 12:00:00', '2025-12-01 12:00:00', TRUE, FALSE),
+(503, 1, 103, 50.00, NULL, 150.00, '2026-11-05 14:00:00', '2026-11-12 14:00:00', TRUE, FALSE),
+(504, 2, 104, 90.00, 400.00, 1000.00, '2025-11-16 12:00:00', '2026-02-16 12:00:00', TRUE, FALSE),
+(505, 2, 105, 95.00, 500.00, 2000.00, '2025-11-16 12:00:00', '2026-02-16 12:00:00', TRUE, FALSE),
+
+(506, 3, 106, 150.00, 250.00, 350.00, '2025-10-20 09:00:00', '2025-10-27 09:00:00', FALSE, FALSE),
+(507, 4, 107, 80.00, 120.00, NULL, '2025-11-05 10:00:00', '2025-11-12 10:00:00', TRUE, FALSE),
+(508, 5, 108, 250.00, NULL, 399.00, '2025-11-15 08:00:00', '2025-11-22 08:00:00', TRUE, FALSE),
+(509, 6, 109, 60.00, 120.00, NULL, '2025-10-25 11:00:00', '2025-11-02 11:00:00', FALSE, FALSE),
+(510, 7, 110, 300.00, 450.00, NULL, '2025-11-01 14:00:00', '2025-11-15 14:00:00', TRUE, FALSE),
+
+(511, 8, 111, 40.00, NULL, 120.00, '2025-11-20 09:00:00', '2025-12-01 09:00:00', TRUE, FALSE),
+(512, 9, 112, 350.00, 600.00, 700.00, '2025-11-25 12:00:00', '2026-01-01 12:00:00', TRUE, FALSE),
+(513,10, 113, 25.00, NULL, 60.00, '2025-11-18 08:00:00', '2025-11-25 08:00:00', TRUE, FALSE),
+(514, 1, 114, 20.00, NULL, NULL, '2025-11-02 09:00:00', '2025-11-09 09:00:00', FALSE, FALSE),
+(515, 2, 115, 500.00, 900.00, NULL, '2025-12-01 10:00:00', '2025-12-10 10:00:00', TRUE, FALSE),
+
+(516, 3, 116, 70.00, NULL, 200.00, '2025-11-07 13:00:00', '2025-11-14 13:00:00', TRUE, FALSE),
+(517, 4, 117, 120.00, NULL, 300.00, '2025-11-10 12:30:00', '2025-11-17 12:30:00', TRUE, FALSE),
+(518, 5, 118, 35.00, NULL, NULL, '2025-11-22 15:00:00', '2025-11-29 15:00:00', TRUE, FALSE),
+(519, 6, 119, 220.00, 350.00, NULL, '2025-11-02 10:00:00', '2025-11-09 10:00:00', FALSE, FALSE),
+(520, 7, 120, 180.00, NULL, 300.00, '2025-11-03 11:00:00', '2025-11-10 11:00:00', FALSE, FALSE),
+
+(521, 8, 121, 45.00, NULL, NULL, '2025-11-06 09:00:00', '2025-11-13 09:00:00', TRUE, FALSE),
+(522, 9, 122, 150.00, 250.00, 500.00, '2025-11-08 10:00:00', '2025-11-29 10:00:00', TRUE, FALSE),
+(523,10, 123, 30.00, NULL, 80.00, '2025-11-09 08:30:00', '2025-11-16 08:30:00', TRUE, FALSE),
+(524, 1, 124, 60.00, NULL, NULL, '2025-11-11 14:00:00', '2025-11-18 14:00:00', TRUE, FALSE),
+(525, 2, 125, 200.00, 350.00, 450.00, '2025-11-12 16:00:00', '2025-11-19 16:00:00', TRUE, FALSE);
+
+-- Watchlist entries (user_id refers to users table)
+INSERT INTO watchlist (user_id, auction_id) VALUES
+(4, 501),
+(5, 503),
+(6, 506),
+(7, 507),
+(11, 507),
+(12, 508),
+(13, 509),
+(14, 510),
+(15, 511),
+(16, 512),
+(4, 512),
+(5, 514),
+(20, 515),
+(21, 516),
+(22, 517),
+(23, 518);
+
+-- Bids (1001..1025) - buyer_id must reference buyer table (1..15)
+-- Keep original bids and add expanded ones; all buyer_id values exist in buyer table above.
+INSERT INTO bids (bid_id, buyer_id, auction_id, amount, date) VALUES
+(1001, 1, 501, 500.00, '2025-11-01 10:05:00'),
+(1002, 2, 501, 650.00, '2025-11-02 11:30:00'),
+
+(1003, 1, 502, 150.00, '2025-10-26 15:00:00'),
+(1004, 2, 502, 175.00, '2025-10-27 10:00:00'),
+(1005, 1, 502, 210.00, '2025-10-31 09:00:00'),
+
+(1006, 5, 506, 160.00, '2025-10-20 09:10:00'),
+(1007, 6, 506, 175.00, '2025-10-21 10:00:00'),
+(1008, 7, 507, 85.00, '2025-11-05 11:00:00'),
+(1009, 8, 507, 95.00, '2025-11-06 09:30:00'),
+(1010, 9, 508, 260.00, '2025-11-15 08:30:00'),
+(1011,10, 508, 300.00, '2025-11-16 09:45:00'),
+(1012,11, 509, 65.00, '2025-10-26 12:00:00'),
+(1013,12, 510, 310.00, '2025-11-02 15:30:00'),
+(1014,13, 511, 45.00, '2025-11-21 09:10:00'),
+(1015,14, 512, 360.00, '2025-11-26 13:00:00'),
+(1016,15, 512, 400.00, '2025-11-27 14:00:00'),
+(1017, 1, 512, 450.00, '2025-11-28 16:20:00'),
+(1018, 2, 513, 30.00, '2025-11-18 08:35:00'),
+(1019, 3, 514, 22.00, '2025-11-03 09:00:00'),
+(1020, 4, 515, 520.00, '2025-12-02 10:10:00'),
+(1021, 5, 516, 75.00, '2025-11-07 13:20:00'),
+(1022, 6, 517, 125.00, '2025-11-11 12:40:00'),
+(1023, 7, 518, 40.00, '2025-11-23 15:10:00'),
+(1024, 8, 519, 230.00, '2025-11-04 10:05:00'),
+(1025, 9, 520, 190.00, '2025-11-03 11:05:00');
+
+-- Messages (message_id 1..22) - must reference valid seller_id (1..10) and buyer_id (1..15)
+INSERT INTO message (message_id, seller_id, buyer_id, message, date) VALUES
+(1, 1, 1, 'Can you confirm the laptop battery life?', '2025-11-02 15:00:00'),
+(2, 1, 1, 'Estimated 8 hours under light use.', '2025-11-02 15:10:00'),
+(3, 3, 5, 'Is the camera included with the lens cap?', '2025-10-20 09:15:00'),
+(4, 4, 6, 'TV has minor scratch, photos attached.', '2025-11-06 09:40:00'),
+(5, 5, 7, 'Mixer still in original box, can ship Monday.', '2025-11-15 08:45:00'),
+(6, 6, 8, 'Mower serviced last month — blades replaced.', '2025-10-26 13:30:00'),
+(7, 7, 9, 'Coin set comes with certificate.', '2025-11-01 15:20:00'),
+(8, 8,10, 'Poster is framed, buyer collects only.', '2025-11-21 09:30:00'),
+(9, 9,11, 'PS5 includes an extra game — would you like photos?', '2025-11-26 13:10:00'),
+(10,10,12, 'Tracker battery holds charge well.', '2025-11-18 09:00:00'),
+(11,1, 13, 'Handmade bowl glaze is food safe.', '2025-11-02 09:30:00'),
+(12,2, 14, 'Necklace has hallmark inside clasp.', '2025-12-02 10:15:00'),
+(13,3, 15, 'Guitar has small scratch on back.', '2025-11-08 14:00:00'),
+(14,4, 5, 'First edition has inscription.', '2025-11-10 12:45:00'),
+(15,5, 6, 'Robot operates when wound, smiling seller!', '2025-11-22 15:40:00'),
+(16,6, 7, 'Ultrabook battery tested at 6 hours.', '2025-11-03 10:20:00'),
+(17,7, 8, 'Phone works on all UK networks.', '2025-11-04 11:20:00'),
+(18,8, 9, 'Print signed and numbered.', '2025-11-06 09:05:00'),
+(19,9,10, 'Bench is heavy; local pick-up suggested.', '2025-11-12 14:05:00'),
+(20,10,11,'Vase has slight crazing but no chips.', '2025-11-13 16:10:00'),
+(21,2, 5, 'Thanks — can you lower reserve a touch?', '2025-11-07 10:55:00'),
+(22,1, 6, 'Sold as described, ready to post tomorrow.', '2025-11-09 09:40:00');
+
+-- Transactions (transaction_id 1..11) referencing valid bid_id values inserted above
+INSERT INTO transaction (transaction_id, bid_id, seller_rating, seller_comments, buyer_rating, buyer_comments) VALUES
+(1, 1005, 4.50, 'Excellent communication - fast payment.', NULL, NULL),
+(2, 1006, 4.25, 'Paid promptly; item as described.', 4.50, 'Great seller.'),
+(3, 1007, 4.00, 'Good comms; shipping delayed a day.', 4.00, 'Item arrived OK.'),
+(4, 1010, 4.75, 'Excellent packaging, quick dispatch.', 4.80, 'Very pleased.'),
+(5, 1015, 4.60, 'Nice buyer, easy to contact.', 4.50, 'Happy with purchase.'),
+(6, 1016, 4.90, 'Smooth transaction, thanks!', 4.85, 'Perfect.'),
+(7, 1020, 4.50, 'Good communication - fast payment.', NULL, NULL),
+(8, 1023, 4.10, 'Buyer asked for extra photos, polite.', 4.00, 'As expected.'),
+(9, 1024, 3.95, 'Minor confusion over postage but sorted.', 4.10, 'OK overall.'),
+(10,1025, 4.20, 'Item matched description.', 4.30, 'Would buy again.'),
+(11,1003, 4.00, 'Solid bidder; paid on time.', 4.10, 'Smooth.');
+
+-- done
