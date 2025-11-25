@@ -178,7 +178,7 @@
         $message ="
         To {$watcher_name},
 
-        Someone won the auction for '{$winning_bidder_item}' that you are watching. With a bid of £{$winning_bidder_bid_amount} on 
+        Someone won the auction for '{$winning_bidder_item}' that you are watching. With a bid of £{$winning_bidder_bid_amount}.
         
         If you wish to stop recieving updates, please remove this item from your watchlist.
 
