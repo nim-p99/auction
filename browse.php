@@ -8,7 +8,7 @@ require("utilities.php");
 <div class="container">
 
 
-<h2 class="my-3">Browse LISTINGS</h2>
+<h2 class="my-3">Browse Listings</h2>
 
 
 <?php
