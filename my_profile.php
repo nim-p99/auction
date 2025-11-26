@@ -139,11 +139,11 @@ $seller_id = $_SESSION['seller_id'];
                 <ul class= "nav nav-tabs card-header-tabs" id="seller-dashboard-tabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=listings; ?>">My Listings</a>
+                        href="my_profile.php?section=seller&tab=listings">My Listings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=listings&complete=true; ?>">Completed Auctions</a>
+                        href="my_profile.php?section=seller&tab=completed">Completed Auctions</a>
                     </li>
                 </ul>
             </div>
@@ -162,7 +162,7 @@ $seller_id = $_SESSION['seller_id'];
                           id="completed" role="tabpanel">
                       <h5 class="card-title">Completed Auctions</h5>
                       <p class="card-text"> Here you can view all of your completed auctions.</p>
-                      <?php include "mylistings.php";?>
+                      <?php include "completed_auctions.php";?>
                     </div>
                 </div> <!-- end seller tab content -->
             </div> <!-- end card body -->
