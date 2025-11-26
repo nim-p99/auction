@@ -82,7 +82,7 @@ CREATE TABLE auction (
   FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
   FOREIGN KEY (item_id) REFERENCES item(item_id),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  main_sent BOOLEAN NOT NULL DEFAULT FALSE
+  mail_sent BOOLEAN NOT NULL DEFAULT FALSE
 ) ENGINE=InnoDB;
 
 CREATE TABLE watchlist (
@@ -265,7 +265,7 @@ INSERT INTO item (item_id, category_id, title, description, photo_url, item_cond
 (125, 3, 'Antique Vase', 'Porcelain, some crazing', 'url/vase.jpg', 'Used - Fair');
 
 -- Auctions (501..525) - seller_id references seller table (1..10)
-INSERT INTO auction (auction_id, seller_id, item_id, start_bid, reserve_price, buy_now_price, start_date_time, end_date_time, is_active, main_sent) VALUES
+INSERT INTO auction (auction_id, seller_id, item_id, start_bid, reserve_price, buy_now_price, start_date_time, end_date_time, is_active, mail_sent) VALUES
 (501, 1, 101, 500.00, 750.00, 999.99, '2025-11-01 10:00:00', '2025-11-08 10:00:00', FALSE, FALSE),
 (502, 2, 102, 100.00, 200.00, NULL, '2025-11-12 12:00:00', '2025-12-01 12:00:00', TRUE, FALSE),
 (503, 1, 103, 50.00, NULL, 150.00, '2026-11-05 14:00:00', '2026-11-12 14:00:00', TRUE, FALSE),
