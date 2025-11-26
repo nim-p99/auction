@@ -210,7 +210,7 @@ $seller_id = $_SESSION['seller_id'];
                           id="address" role="tabpanel">
                       <h5 class="card-title">Address Info</h5>
                       <p class="card-text"> Here you can view/change your address information.</p>
-                      <?php include "address_details.php";?>
+                      <?php include "address_details3.php";?>
                     </div>
                 </div> <!-- end account tab content -->
             </div> <!-- end card body -->

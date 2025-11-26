@@ -1,5 +1,16 @@
 <?php
 include_once("utilities.php");
+// CHECK FOR MESSAGES FROM process_change_password.php
+if (isset($_SESSION['pass_msg'])) {
+    $msg = $_SESSION['pass_msg'];
+    $type = $_SESSION['pass_type'] ?? 'info';
+    
+    echo '<div class="alert alert-' . $type . '">' . htmlspecialchars($msg) . '</div>';
+    
+    // Clear message
+    unset($_SESSION['pass_msg']);
+    unset($_SESSION['pass_type']);
+}
 ?>
 
 
@@ -26,7 +37,7 @@ include_once("utilities.php");
   </div>
 
   <br><br>
-  <button type= "submit">SUBMIT CHANGES</button>
+  <button type="submit" class="btn btn-primary mt-2">SUBMIT CHANGES</button>
 </form>
 
 
