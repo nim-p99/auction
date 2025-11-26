@@ -13,14 +13,10 @@
  
   $get_seller_id = $_GET['seller_id'] ?? null;
   if ($get_seller_id) {
-    $seller_id = $get_seller_id; 
-  } else {
-    $seller_id = $_SESSION['seller_id'];
-  }
+    $seller_id = $get_seller_id;
+    echo '<h2 class="my-3">' . $seller_username . "'s listings</h2>"; 
+  } 
 
-
-
-  echo '<h2 class="my-3">' . $seller_id . "'s listings</h2>";
    
   // TODO: Check user's credentials (cookie/session).
   
