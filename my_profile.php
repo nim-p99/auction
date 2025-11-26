@@ -51,7 +51,7 @@ $seller_id = $_SESSION['seller_id'];
                 </a>
 
                 <a class= "nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
-                  href="my_profile.php?section=seller&seller_id=<?php echo $seller_id; ?>"><!-- Seller Dashboard link -->
+                  href="my_profile.php?section=seller"><!-- Seller Dashboard link -->
                     <i class="fa fa-gavel fa-fw mr-2"></i> Seller Dashboard
                 </a>
 
@@ -139,11 +139,11 @@ $seller_id = $_SESSION['seller_id'];
                 <ul class= "nav nav-tabs card-header-tabs" id="seller-dashboard-tabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=listings&seller_id=<?php echo $seller_id; ?>">My Listings</a>
+                        href="my_profile.php?section=seller&tab=listings; ?>">My Listings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=listings&complete=true&seller_id=<?php echo $seller_id; ?>">Completed Auctions</a>
+                        href="my_profile.php?section=seller&tab=listings&complete=true; ?>">Completed Auctions</a>
                     </li>
                 </ul>
             </div>
