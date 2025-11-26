@@ -15,7 +15,7 @@ $buyerID = $_SESSION['buyer_id'];
   
 
 
-echo '<h2 class="my-3">My Bids</h2>';
+//echo '<h2 class="my-3">My Bids</h2>';
    //TODO: Check user's credentials (cookie/session).
   
   // TODO: Perform a query to pull up their auctions.

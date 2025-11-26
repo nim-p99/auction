@@ -2,10 +2,26 @@
 include_once "header.php";
 include_once "utilities.php";
 
+$seller_username = null;
 // Example: Get seller ID from URL
 $seller_id = $_GET['seller_id'] ?? null;
 if (!$seller_id) {
     die("No seller specified.");
+}
+else {
+  // get username from seller_id 
+  $query = $connection->prepare(
+    "SELECT u.username 
+    FROM users AS u 
+    JOIN seller AS s 
+    ON u.user_id = s.user_id 
+    WHERE s.seller_id = ?"
+  );
+  $query->bind_param("i", $seller_id);
+  $query->execute();
+  $query->bind_result($seller_username);
+  $query->fetch();
+  $query->close();
 }
 
 // Define tabs and their corresponding PHP includes
@@ -26,7 +42,7 @@ if (!array_key_exists($current_tab, $tabs)) {
 
 <div class="container mt-4 mb-4">
   <h2 class="my-3">Seller Profile</h2>
-  <p class="lead">Viewing seller: <strong><?php echo htmlspecialchars($seller_id); ?></strong></p>
+  <p class="lead">Viewing seller: <strong><?php echo htmlspecialchars($seller_username); ?></strong></p>
   
   <div class="row">
     
