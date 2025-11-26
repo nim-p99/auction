@@ -14,7 +14,7 @@
   $get_seller_id = $_GET['seller_id'] ?? null;
   if ($get_seller_id) {
     $seller_id = $get_seller_id;
-    echo '<h2 class="my-3">' . $seller_username . "'s listings</h2>"; 
+    echo '<h2 class="my-3">' . $seller_username . "'s completed auctions</h2>"; 
   } 
 
    
@@ -37,7 +37,7 @@ $current_params = $_GET;
 
 //VARIABLE INITIALISATION
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
-$sort_by = $_GET['sort'] ?? 'hot'; //default to items that have lots of bids'
+$sort_by = $_GET['sort'] ?? 'date_dsc'; //default to items that have lots of bids'
 $keyword = $_GET['keyword'] ?? '';
 if (!isset($_GET['page'])) {
     $curr_page = 1;
@@ -79,25 +79,40 @@ else {
     </div>
     <!-- end keyword search -->
 
-    <!-- Category filter-->
+    <!-- Category filter--> 
     <div class="col-md-3 pr-0">
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
         <select class="form-control" id="cat" name="cat">
-          <!-- first option will be all categories 
-          need to come back to this if we want to order by parent category then list its children
-          -->
           <option value="all" <?php if ($filter_cat=='all') echo 'selected'; ?>>All Categories</option>
-          <!--- --------------------------------------------------------------------------------------
-                      NEED TO CHANGE SO SELECTED CATEGORY REMAINS SELECTED AFTER SUBMITTING FORM
-          ----------------------------------------------------------------------------------------- -->
           <?php
-            #category populated from database
-            $category_query = "SELECT * from category AS c";
-            $categories_to_list = mysqli_query($connection, $category_query);
-            while ($row = mysqli_fetch_assoc($categories_to_list)) {
-              $selected = ($filter_cat == $row['category_id']) ? 'selected' : '';
-              echo "<option value = '{$row['category_id']}' $selected> {$row['category_name']}</option>";
+            // Load categories with hierarchy from the database
+            $sql = "
+              SELECT c.category_id, c.category_name, c.parent_category
+              FROM category c
+              LEFT JOIN category p ON c.parent_category = p.category_id
+              ORDER BY
+                CASE WHEN c.parent_category IS NULL THEN c.category_name ELSE p.category_name END,
+                CASE WHEN c.parent_category IS NULL THEN '' ELSE c.category_name END
+            ";
+            $result = mysqli_query($connection, $sql);
+
+            if ($result) {
+              while ($row = mysqli_fetch_assoc($result)) {
+                $label = $row['category_name'];
+
+                // Indent child categories
+                if (!is_null($row['parent_category'])) {
+                  $label = '— ' . $label;
+                }
+
+                $selected = ($filter_cat == $row['category_id']) ? 'selected' : '';
+                echo '<option value="' . htmlspecialchars($row['category_id']) . '" ' . $selected . '>'
+                  . htmlspecialchars($label) .
+                  '</option>';
+              }
+            } else {
+              echo '<option disabled>Unable to load categories</option>';
             }
           ?>
         </select>
@@ -113,13 +128,13 @@ else {
         <select class="form-control" id="order_by" name="sort">
           <?php
             $sort_options = [
-              'hot' => 'Hot items',
-              'date_asc' => 'Soonest expiry',
-              'date_dsc' => 'Latest expiry',
-              'pricelow' => 'Price (low-high)',
-              'pricehigh' => 'Price (high-low)',
-              'buy_now_asc' => 'Buy Now (low-high)',
-              'buy_now_dsc' => 'Buy Now (high-low)'
+              'hot' => 'Hottest items',
+              'date_asc' => 'Earliest',
+              'date_dsc' => 'Latest',
+              'pricelow' => 'Ending price (low-high)',
+              'pricehigh' => 'Ending price (high-low)'
+              //'buy_now_asc' => 'Buy Now (low-high)',
+              //'buy_now_dsc' => 'Buy Now (high-low)'
             ];
             foreach ($sort_options as $key => $label) {
               $selected = ($sort_by == $key) ? 'selected' : '';
@@ -165,15 +180,8 @@ else {
 <div class="list-container">
 <?php 
 
-  // Construct the final query using the filter category and sort by
-  // need to change so only active auctions are shown
-  /* $final_query = " */
-  /*   SELECT * from auction AS a  */
-  /*   JOIN item AS i ON a.item_id = i.item_id */
-  /*   JOIN category AS c ON c.category_id = i.category_id  */
-  /*   WHERE a.seller_id = $seller_id"; */
-
   
+    
   $final_query = "
     SELECT 
       a.auction_id, a.start_bid, a.reserve_price,
@@ -188,11 +196,31 @@ else {
     JOIN category AS c ON c.category_id = i.category_id
     LEFT JOIN bids AS b ON b.auction_id = a.auction_id
     WHERE a.seller_id = $seller_id
+      AND a.end_date_time < NOW()
     ";
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
   $final_query .= " GROUP BY a.auction_id ";
-  $final_query = sort_by($sort_by, $final_query);
+  switch ($sort_by) {
+    case "hot":
+      $final_query .= " ORDER BY num_bids DESC";
+      break;
+    case "date_asc":
+      $final_query .= " ORDER BY a.end_date_time ASC";
+      break;
+    case "date_dsc":
+      $final_query .= " ORDER BY a.end_date_time DESC";
+      break;
+    case "pricelow":
+      $final_query .= " ORDER BY highest_bid ASC";
+      break;
+    case "pricehigh":
+      $final_query .= " ORDER BY highest_bid DESC";
+      break;
+    default:
+      $final_query .= " ORDER BY a.end_date_time DESC";
+  }
+  //$final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings
@@ -228,7 +256,7 @@ else {
   if ($curr_page != 1) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mylistings.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+      <a class="page-link" href="completed_auctions.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
@@ -249,14 +277,14 @@ else {
     
     // Do this in any case
     echo('
-      <a class="page-link" href="mylistings.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+      <a class="page-link" href="completed_auctions.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
   
   if ($curr_page != $max_page) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mylistings.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+      <a class="page-link" href="completed_auctions.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>

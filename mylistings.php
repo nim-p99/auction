@@ -17,7 +17,7 @@
     echo '<h2 class="my-3">' . $seller_username . "'s listings</h2>"; 
   }
 
-  $complete = $_GET['complete'] ?? false;
+  
    
    
   // TODO: Check user's credentials (cookie/session).
@@ -81,25 +81,40 @@ else {
     </div>
     <!-- end keyword search -->
 
-    <!-- Category filter-->
+    <!-- Category filter--> 
     <div class="col-md-3 pr-0">
       <div class="form-group">
         <label for="cat" class="sr-only">Search within:</label>
         <select class="form-control" id="cat" name="cat">
-          <!-- first option will be all categories 
-          need to come back to this if we want to order by parent category then list its children
-          -->
           <option value="all" <?php if ($filter_cat=='all') echo 'selected'; ?>>All Categories</option>
-          <!--- --------------------------------------------------------------------------------------
-                      NEED TO CHANGE SO SELECTED CATEGORY REMAINS SELECTED AFTER SUBMITTING FORM
-          ----------------------------------------------------------------------------------------- -->
           <?php
-            #category populated from database
-            $category_query = "SELECT * from category AS c";
-            $categories_to_list = mysqli_query($connection, $category_query);
-            while ($row = mysqli_fetch_assoc($categories_to_list)) {
-              $selected = ($filter_cat == $row['category_id']) ? 'selected' : '';
-              echo "<option value = '{$row['category_id']}' $selected> {$row['category_name']}</option>";
+            // Load categories with hierarchy from the database
+            $sql = "
+              SELECT c.category_id, c.category_name, c.parent_category
+              FROM category c
+              LEFT JOIN category p ON c.parent_category = p.category_id
+              ORDER BY
+                CASE WHEN c.parent_category IS NULL THEN c.category_name ELSE p.category_name END,
+                CASE WHEN c.parent_category IS NULL THEN '' ELSE c.category_name END
+            ";
+            $result = mysqli_query($connection, $sql);
+
+            if ($result) {
+              while ($row = mysqli_fetch_assoc($result)) {
+                $label = $row['category_name'];
+
+                // Indent child categories
+                if (!is_null($row['parent_category'])) {
+                  $label = '— ' . $label;
+                }
+
+                $selected = ($filter_cat == $row['category_id']) ? 'selected' : '';
+                echo '<option value="' . htmlspecialchars($row['category_id']) . '" ' . $selected . '>'
+                  . htmlspecialchars($label) .
+                  '</option>';
+              }
+            } else {
+              echo '<option disabled>Unable to load categories</option>';
             }
           ?>
         </select>
@@ -113,8 +128,8 @@ else {
       <div class="form-inline">
         <label class="mx-2" for="order_by">Sort by:</label>
         <select class="form-control" id="order_by" name="sort">
-          <?php
-            $sort_options = [
+        <?php
+          $sort_options = [
               'hot' => 'Hot items',
               'date_asc' => 'Soonest expiry',
               'date_dsc' => 'Latest expiry',
@@ -123,11 +138,11 @@ else {
               'buy_now_asc' => 'Buy Now (low-high)',
               'buy_now_dsc' => 'Buy Now (high-low)'
             ];
-            foreach ($sort_options as $key => $label) {
-              $selected = ($sort_by == $key) ? 'selected' : '';
-              echo "<option value='$key' $selected>$label</option>";
-            }
-            ?>
+          foreach ($sort_options as $key => $label) {
+            $selected = ($sort_by == $key) ? 'selected' : '';
+            echo "<option value='$key' $selected>$label</option>";
+          }
+        ?>
           <!--<option value="hot">Hot items</option>
           <option value="date_asc">Soonest expiry</option>
           <option value="date_dsc">Latest expiry</option>
