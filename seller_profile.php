@@ -27,6 +27,7 @@ else {
 // Define tabs and their corresponding PHP includes
 $tabs = [
     'listings' => 'mylistings.php',
+    'completed' => 'completed_auctions.php',
     'reviews'  => 'reviews.php',
     'message'  => 'messages.php'
 ];
@@ -53,6 +54,11 @@ if (!array_key_exists($current_tab, $tabs)) {
         <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
            href="seller_profile.php?seller_id=<?php echo urlencode($seller_id); ?>&tab=listings">
           <i class="fa fa-gavel fa-fw mr-2"></i> Listings
+        </a>
+
+        <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
+           href="seller_profile.php?seller_id=<?php echo urlencode($seller_id); ?>&tab=completed">
+          <i class="fa fa-money fa-fw mr-2"></i> Completed Auctions
         </a>
 
         <a class="nav-link <?php if ($current_tab == 'reviews') echo 'active'; ?>" 
