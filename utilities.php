@@ -302,18 +302,6 @@ function list_account_details($table) { ?>
 
 
 <?php
-/* function list_user_bids($result) { */
-/*   while ($row = mysqli_fetch_assoc($result)) { */
-/*     echo '<div class="bid-row">'; */
-/*     echo '<h5>' . htmlspecialchars($row['title']) . '</h5>'; */
-/*     echo '<p>Bid: £' . number_format($row['amount'], 2) . '</p>'; */
-/*     echo '<p>Date: ' . htmlspecialchars($row['date']) . '</p>'; */
-/*     echo '</div>'; */
-/*   } */
-/* } */
-/* ?> */
-
-
 // print_bid_li: prints a single bid in list-group style
 function print_bid_li($item_id, $title, $description, $bid_amount, $bid_date) {
     // Truncate long descriptions
@@ -346,9 +334,4 @@ function list_user_bids($result) {
         print_bid_li($item_id, $title, $description, $bid_amount, $bid_date);
     }
     echo '</ul>';
-}
-
-
-
-
-?>
+}?>
