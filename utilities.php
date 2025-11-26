@@ -301,3 +301,54 @@ function list_account_details($table) { ?>
 <?php } ?>
 
 
+<?php
+/* function list_user_bids($result) { */
+/*   while ($row = mysqli_fetch_assoc($result)) { */
+/*     echo '<div class="bid-row">'; */
+/*     echo '<h5>' . htmlspecialchars($row['title']) . '</h5>'; */
+/*     echo '<p>Bid: £' . number_format($row['amount'], 2) . '</p>'; */
+/*     echo '<p>Date: ' . htmlspecialchars($row['date']) . '</p>'; */
+/*     echo '</div>'; */
+/*   } */
+/* } */
+/* ?> */
+
+
+// print_bid_li: prints a single bid in list-group style
+function print_bid_li($item_id, $title, $description, $bid_amount, $bid_date) {
+    // Truncate long descriptions
+    $desc_shortened = strlen($description) > 250 ? substr($description, 0, 250) . '...' : $description;
+
+    echo '
+    <li class="list-group-item d-flex justify-content-between">
+        <div class="p-2 mr-5">
+            <h5><a href="listing.php?item_id=' . $item_id . '">' . htmlspecialchars($title) . '</a></h5>
+            ' . htmlspecialchars($desc_shortened) . '
+        </div>
+        <div class="text-center text-nowrap">
+            <span><strong>Your bid:</strong> £' . number_format($bid_amount, 2) . '</span><br>
+            <small>Placed on: ' . htmlspecialchars($bid_date) . '</small>
+        </div>
+    </li>
+    ';
+}
+
+// list_user_bids: prints all bids using print_bid_li
+function list_user_bids($result) {
+    echo '<ul class="list-group">';
+    while ($row = mysqli_fetch_assoc($result)) {
+        $item_id     = $row['item_id'];
+        $title       = $row['title'];
+        $description = $row['description'] ?? '';
+        $bid_amount  = $row['amount'];
+        $bid_date    = $row['date'];
+
+        print_bid_li($item_id, $title, $description, $bid_amount, $bid_date);
+    }
+    echo '</ul>';
+}
+
+
+
+
+?>
