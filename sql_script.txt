@@ -89,7 +89,7 @@ CREATE TABLE auction (
   FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
   FOREIGN KEY (item_id) REFERENCES item(item_id),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  main_sent BOOLEAN NOT NULL DEFAULT FALSE
+  mail_sent BOOLEAN NOT NULL DEFAULT FALSE
 )ENGINE=InnoDB;
 
 CREATE TABLE watchlist (
