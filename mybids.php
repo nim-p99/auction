@@ -2,31 +2,8 @@
 
 <div class="container">
 
-
 <?php
-  // This page is for showing a user the auction listings they've made.
-  // It will be pretty similar to browse.php, except there is no search bar.
-  // This can be started after browse.php is working with a database.
-  // Feel free to extract out useful functions from browse.php and put them in
-  // the shared "utilities.php" where they can be shared by multiple files.
-//TODO: check seller_id and extract username.
-
 $buyerID = $_SESSION['buyer_id'];
-  
-
-
-//echo '<h2 class="my-3">My Bids</h2>';
-   //TODO: Check user's credentials (cookie/session).
-  
-  // TODO: Perform a query to pull up their auctions.
-
-  
-  // TODO: Loop through results and print them out as list items.
-  
-?>
-
-
-<?php
 
   //preserve current URL
 $base_url = htmlspecialchars($_SERVER['PHP_SELF']);
@@ -127,12 +104,17 @@ else {
           <?php
             $sort_options = [
               'hot' => 'Hot items',
-              'date_asc' => 'Soonest expiry',
-              'date_dsc' => 'Latest expiry',
-              'pricelow' => 'Price (low-high)',
+              //'date_asc' => 'Soonest expiry',
+              'date_asc' => 'Ealiest Bids',
+              //'date_dsc' => 'Latest expiry',
+              'date_dsc' => 'Latest Bids',
+              //'pricelow' => 'Price (low-high)',
+              'pricelow' => 'Amount (low-high)',
               'pricehigh' => 'Price (high-low)',
-              'buy_now_asc' => 'Buy Now (low-high)',
-              'buy_now_dsc' => 'Buy Now (high-low)'
+              'pricehigh' => 'Amount (high-low)',
+              //'buy_now_asc' => 'Buy Now (low-high)',
+              //'buy_now_dsc' => 'Buy Now (high-low)'
+
             ];
             foreach ($sort_options as $key => $label) {
               $selected = ($sort_by == $key) ? 'selected' : '';
@@ -178,39 +160,56 @@ else {
 <div class="list-container">
 <?php 
 
-  // Construct the final query using the filter category and sort by
-  // need to change so only active auctions are shown
-  /* $final_query = " */
-  /*   SELECT * from auction AS a  */
-  /*   JOIN item AS i ON a.item_id = i.item_id */
-  /*   JOIN category AS c ON c.category_id = i.category_id  */
-  /*   WHERE a.seller_id = $seller_id"; */
-
   
+  /* $final_query = " */
+  /*   SELECT  */
+  /*     a.auction_id, a.start_bid, a.reserve_price, */
+  /*     a.buy_now_price, a.start_date_time, a.end_date_time, */
+  /*     i.item_id, i.title, i.description, i.photo_url, i.item_condition, */
+  /*     c.category_id, c.category_name, */
+  /*     COALESCE(MAX(b.amount), 0) AS highest_bid, */
+  /*     COUNT(b.bid_id) AS num_bids, */
+  /*     GREATEST(a.start_bid, COALESCE(MAX(b.amount), 0)) AS current_price */
+  /*   FROM auction AS a  */
+  /*   JOIN item AS i ON a.item_id = i.item_id */
+  /*   JOIN category AS c ON c.category_id = i.category_id */
+  /*   LEFT JOIN bids AS b ON b.auction_id = a.auction_id */
+  /*   WHERE b.buyer_id = $buyerID */
+            /*   "; */
   $final_query = "
     SELECT 
-      a.auction_id, a.start_bid, a.reserve_price,
-      a.buy_now_price, a.start_date_time, a.end_date_time,
-      i.item_id, i.title, i.description, i.photo_url, i.item_condition,
-      c.category_id, c.category_name,
-      COALESCE(MAX(b.amount), 0) AS highest_bid,
-      COUNT(b.bid_id) AS num_bids,
-      GREATEST(a.start_bid, COALESCE(MAX(b.amount), 0)) AS current_price
-    FROM auction AS a 
-    JOIN item AS i ON a.item_id = i.item_id
+      b.bid_id, b.amount, b.date,
+      i.title, i.item_id, a.auction_id, a.end_date_time,
+      c.category_id
+    FROM bids AS b 
+    JOIN auction AS a ON b.auction_id = a.auction_id 
+    JOIN item AS i ON a.item_id = i.item_id 
     JOIN category AS c ON c.category_id = i.category_id
-    LEFT JOIN bids AS b ON b.auction_id = a.auction_id
-    WHERE b.buyer_id = $buyerID
-    ";
+    WHERE b.buyer_id = $buyerID 
+  ";
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
-  $final_query .= " GROUP BY a.auction_id ";
-  $final_query = sort_by($sort_by, $final_query);
+  //$final_query .= " GROUP BY a.auction_id ";
+  switch ($sort_by) {
+    case "pricehigh":
+      $final_query .= " ORDER BY b.amount DESC";
+      break;
+    case "pricelow":
+      $final_query .= " ORDER BY b.amount ASC";
+      break;
+    case "date_asc":
+      $final_query .= " ORDER BY b.date ASC";
+      break;
+    default:
+      $final_query .= " ORDER BY b.date DESC";
+  }
+  //$final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings
   if (mysqli_num_rows($auctions_to_list) > 0) {
-    list_table_items($auctions_to_list);
+    list_user_bids($auctions_to_list);
+    //list_table_items($auctions_to_list);
   } else {
     echo "<p>You haven't placed any bids yet.</p>";
   }
