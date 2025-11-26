@@ -1,23 +1,15 @@
 <?php
-// Ensure error reporting is at the top of the included file too, for safety
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
+/* ini_set('display_errors', 1); */
+/* ini_set('display_startup_errors', 1); */
+/* error_reporting(E_ALL); */
 include_once("utilities.php");
 
-// *** FIX A: REMOVED session_start(); ***
-// The parent script (my_profile.php or header.php) should already start the session.
-
 if (!isset($_SESSION['user_id'])) {
-    // This is a correct check for a non-logged-in user
     header("Location: login.php");
     exit();
 }
 
 $userID = $_SESSION['user_id'];
-
-// Initialize variables
 $address_line1 = null;
 $address_line2 = null;
 $city = null;
@@ -45,84 +37,94 @@ if ($addressID) {
     $stmt->close();
 }
 
+
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
 
-    // IMPORTANT: Changed ?: '' to handle empty strings submitted by the form
-    $new_address1 = trim($_POST['address_line1']) ?: '';
-    $new_address2 = trim($_POST['address_line2']) ?: '';
-    $new_city = trim($_POST['city']) ?: '';
-    $new_postal_code = trim($_POST['postal_code']) ?: '';
+    var_dump($_POST);
+    die('Post triggered');
+
+    $new_address1 = trim($_POST['address_line1']) ?? '';
+    $new_address2 = trim($_POST['address_line2']) ?? '';
+    $new_city = trim($_POST['city']) ?? '';
+    $new_postal_code = trim($_POST['postal_code']) ?? '';
 
     if ($new_address1 === '' || $new_city === '' || $new_postal_code === '') {
         echo "<div class='alert alert-danger'>Address Line 1, City and Postal Code are required.</div>";
     } else {
-
+    
         if (!$addressID) {
             // INSERT new address
-            $stmt = $connection->prepare("INSERT INTO address (address_line1, address_line2, city, postal_code) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $new_address1, $new_address2, $new_city, $new_postal_code);
-            if ($stmt->execute()) {
+            $insert = $connection->prepare("INSERT INTO address (address_line1, address_line2, city, postal_code) VALUES (?, ?, ?, ?)");
+            $insert->bind_param("ssss", $new_address1, $new_address2, $new_city, $new_postal_code);
+            if ($insert->execute()) {
                 $addressID = $connection->insert_id;
-                $stmt->close();
+                $insert->close();
 
                 // Update user with new address_id
-                $stmt = $connection->prepare("UPDATE users SET address_id = ? WHERE user_id = ?");
-                $stmt->bind_param("ii", $addressID, $userID);
-                $stmt->execute();
-                $stmt->close();
-
-                // Successful redirect (PRG Pattern)
-                header("Location: my_profile.php?section=account&tab=address");
-                exit();
+                $update = $connection->prepare("UPDATE users SET address_id = ? WHERE user_id = ?");
+                $update->bind_param("ii", $addressID, $userID);
+                if ($update->execute()) {
+                  //$update->close();
+                  echo '<div class="alert alert-success">Your address details were updated.</div>';
+                  //header("Refresh: 1");
+                  exit();
+                } else {
+                  echo '<div class="alert alert-danger">Failed to update address details: ' . htmlspecialchars($update->error) . '</div>';
+                  //$update->close();
+                }
+                //header("Location: my_profile.php?section=account&tab=address"); 
             } else {
-                die("Insert failed: " . $stmt->error);
+              $insert->close();
             }
-
         } else {
             // UPDATE existing address
-            $stmt = $connection->prepare("UPDATE address SET address_line1 = ?, address_line2 = ?, city = ?, postal_code = ? WHERE address_id = ?");
-            $stmt->bind_param("ssssi", $new_address1, $new_address2, $new_city, $new_postal_code, $addressID);
-            if ($stmt->execute()) {
-                $stmt->close();
+            $update = $connection->prepare("UPDATE address SET address_line1 = ?, address_line2 = ?, city = ?, postal_code = ? WHERE address_id = ?");
+            $update->bind_param("ssssi", $new_address1, $new_address2, $new_city, $new_postal_code, $addressID);
+            if ($update->execute()) {
+                //$update->close();
                 
                 // Successful redirect (PRG Pattern)
-                header("Location: my_profile.php?section=account&tab=address");
-                exit();
+                echo '<div class="alert alert-success">Your address details were updated.</div>';
+                header("Refresh: 1");
+                exit(); 
             } else {
-                die("Update failed: " . $stmt->error);
+              echo '<div class="alert alert-danger">Failed to update address details: ' . htmlspecialchars($update->error) . '</div>';
+              //$update->close();
             }
         }
     }
 }
 ?>
 
-<form action="" method="POST" class="form-horizontal">
+  <form action="" method="POST" class="form-horizontal">
     <div class="form-group row">
-        <label class="col-sm-2 col-form-label text-right">Address Line 1</label>
+        <label for="address_line1" class="col-sm-2 col-form-label text-right">Address Line 1</label>
         <div class="col-sm-10">
-            <input type="text" name="address_line1" class="form-control" value="<?= htmlspecialchars($address_line1 ?: '') ?>">
+            <input type="text" name="address_line1" class="form-control" value="<?php echo htmlspecialchars($address_line1 ?? ''); ?>">
         </div>
     </div>
 
     <div class="form-group row">
-        <label class="col-sm-2 col-form-label text-right">Address Line 2</label>
+        <label for="address_line2" class="col-sm-2 col-form-label text-right">Address Line 2</label>
         <div class="col-sm-10">
-            <input type="text" name="address_line2" class="form-control" value="<?= htmlspecialchars($address_line2 ?: '') ?>">
+            <input type="text" name="address_line2" class="form-control" value="<?php echo htmlspecialchars($address_line2 ?? ''); ?>">
         </div>
     </div>
 
     <div class="form-group row">
-        <label class="col-sm-2 col-form-label text-right">City</label>
+        <label for="city" class="col-sm-2 col-form-label text-right">City</label>
         <div class="col-sm-10">
-            <input type="text" name="city" class="form-control" value="<?= htmlspecialchars($city ?: '') ?>">
+            <input type="text" name="city" class="form-control" value="<?php echo htmlspecialchars($city ?? ''); ?>">
         </div>
     </div>
 
     <div class="form-group row">
-        <label class="col-sm-2 col-form-label text-right">Postal Code</label>
+        <label for="postal_code" class="col-sm-2 col-form-label text-right">Postal Code</label>
         <div class="col-sm-10">
-            <input type="text" name="postal_code" class="form-control" value="<?= htmlspecialchars($postal_code ?: '') ?>">
+            <input type="text" name="postal_code" class="form-control" value="<?php echo htmlspecialchars($postal_code ?? ''); ?>">
         </div>
     </div>
 
