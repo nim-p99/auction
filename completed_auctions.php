@@ -15,10 +15,8 @@
   if ($get_seller_id) {
     $seller_id = $get_seller_id;
     echo '<h2 class="my-3">' . $seller_username . "'s listings</h2>"; 
-  }
+  } 
 
-  $complete = $_GET['complete'] ?? false;
-   
    
   // TODO: Check user's credentials (cookie/session).
   
