@@ -3,15 +3,17 @@ include_once "header.php";
 include_once "utilities.php";
 
 $seller_username = null;
+$seller_user_id = null;
 // Example: Get seller ID from URL
 $seller_id = $_GET['seller_id'] ?? null;
+
 if (!$seller_id) {
     die("No seller specified.");
 }
 else {
   // get username from seller_id 
   $query = $connection->prepare(
-    "SELECT u.username 
+    "SELECT u.username, u.user_id 
     FROM users AS u 
     JOIN seller AS s 
     ON u.user_id = s.user_id 
@@ -19,7 +21,7 @@ else {
   );
   $query->bind_param("i", $seller_id);
   $query->execute();
-  $query->bind_result($seller_username);
+  $query->bind_result($seller_username, $seller_user_id);
   $query->fetch();
   $query->close();
 }
