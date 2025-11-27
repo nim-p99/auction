@@ -54,8 +54,8 @@
   //testing, remove last line to stop testing!!
   $now= new DateTime();
 
-  //$now->modify("+5 years");
 
+  //$now->modify("+5 years");
 
 
   
@@ -245,8 +245,8 @@
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
-  if ($now < $end_time && $_SESSION['user_id']!==1):
-?>
+
+  if ($now < $end_time && $_SESSION['user_id']!==1): ?>
     <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
       <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
     </div>
