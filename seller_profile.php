@@ -2,15 +2,34 @@
 include_once "header.php";
 include_once "utilities.php";
 
+$seller_username = null;
+$seller_user_id = null;
 // Example: Get seller ID from URL
 $seller_id = $_GET['seller_id'] ?? null;
+
 if (!$seller_id) {
     die("No seller specified.");
+}
+else {
+  // get username from seller_id 
+  $query = $connection->prepare(
+    "SELECT u.username, u.user_id 
+    FROM users AS u 
+    JOIN seller AS s 
+    ON u.user_id = s.user_id 
+    WHERE s.seller_id = ?"
+  );
+  $query->bind_param("i", $seller_id);
+  $query->execute();
+  $query->bind_result($seller_username, $seller_user_id);
+  $query->fetch();
+  $query->close();
 }
 
 // Define tabs and their corresponding PHP includes
 $tabs = [
     'listings' => 'mylistings.php',
+    'completed' => 'completed_auctions.php',
     'reviews'  => 'reviews.php',
     'message'  => 'messages.php'
 ];
@@ -26,7 +45,7 @@ if (!array_key_exists($current_tab, $tabs)) {
 
 <div class="container mt-4 mb-4">
   <h2 class="my-3">Seller Profile</h2>
-  <p class="lead">Viewing seller: <strong><?php echo htmlspecialchars($seller_id); ?></strong></p>
+  <p class="lead">Viewing seller: <strong><?php echo htmlspecialchars($seller_username); ?></strong></p>
   
   <div class="row">
     
@@ -37,6 +56,11 @@ if (!array_key_exists($current_tab, $tabs)) {
         <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
            href="seller_profile.php?seller_id=<?php echo urlencode($seller_id); ?>&tab=listings">
           <i class="fa fa-gavel fa-fw mr-2"></i> Listings
+        </a>
+
+        <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
+           href="seller_profile.php?seller_id=<?php echo urlencode($seller_id); ?>&tab=completed">
+          <i class="fa fa-money fa-fw mr-2"></i> Completed Auctions
         </a>
 
         <a class="nav-link <?php if ($current_tab == 'reviews') echo 'active'; ?>" 

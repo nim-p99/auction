@@ -222,5 +222,5 @@ INSERT INTO message (message_id, seller_id, buyer_id, message, date) VALUES
 
 
 -- Transaction for Auction 502, won by buyer_id 1 with bid_id 1005.
-INSERT INTO transaction (bid_id,seller_rating, seller_comments, buyer_rating, buyer_comments) VALUES
-(1005, 4.50, 'Excellent communication, fast payment.', NULL, NULL); -- Buyer rating/comments are pending
+INSERT INTO transaction (bid_id, seller_rating, seller_comments, buyer_rating, buyer_comments) VALUES
+(1005, 4.50, 'Excellent communication - fast payment.', NULL, NULL); -- Buyer rating/comments are pending

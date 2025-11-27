@@ -363,3 +363,76 @@ function update_buyer_average($connection, $buyer_id){
 ?>
 
 
+<?php
+// print_bid_li: prints a single bid in list-group style
+function print_bid_li($item_id, $title, $description, $bid_amount, $bid_date) {
+    // Truncate long descriptions
+    $desc_shortened = strlen($description) > 250 ? substr($description, 0, 250) . '...' : $description;
+
+    echo '
+    <li class="list-group-item d-flex justify-content-between">
+        <div class="p-2 mr-5">
+            <h5><a href="listing.php?item_id=' . $item_id . '">' . htmlspecialchars($title) . '</a></h5>
+            ' . htmlspecialchars($desc_shortened) . '
+        </div>
+        <div class="text-center text-nowrap">
+            <span><strong>Your bid:</strong> £' . number_format($bid_amount, 2) . '</span><br>
+            <small>Placed on: ' . htmlspecialchars($bid_date) . '</small>
+        </div>
+    </li>
+    ';
+}
+
+// list_user_bids: prints all bids using print_bid_li
+function list_user_bids($result) {
+    echo '<ul class="list-group">';
+    while ($row = mysqli_fetch_assoc($result)) {
+        $item_id     = $row['item_id'];
+        $title       = $row['title'];
+        $description = $row['description'] ?? '';
+        $bid_amount  = $row['amount'];
+        $bid_date    = $row['date'];
+
+        print_bid_li($item_id, $title, $description, $bid_amount, $bid_date);
+    }
+    echo '</ul>';
+
+}
+
+// list_bid_history: only displays all bids for a specific auction in a table
+function list_bid_history($result) {
+    $num_bids = mysqli_num_rows($result); //gives number of results to correctly calculate
+
+    if ($num_bids == 0) {
+        echo '<p class="text-muted">No bids have been placed yet.</p>';
+        return;
+    }
+
+    echo '
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>Bidder</th>
+                <th>Bid amount</th>
+                <th>Date & Time</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $username = htmlspecialchars($row['username']);
+        $amount = number_format($row['amount'], 2);
+        $date = htmlspecialchars($row['date']);
+
+        echo "
+            <tr>
+                <td>{$username}</td>
+                <td>£{$amount}</td>
+                <td>{$date}</td>
+            </tr>";
+    }
+
+    echo '
+        </tbody>
+    </table>';
+}?>

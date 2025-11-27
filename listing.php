@@ -2,7 +2,7 @@
 <?php require("utilities.php")?>
 
 <?php
- 
+  
   if (isset($_SESSION['error_message'])) {
     echo "<div class='alert alert-danger'>" . $_SESSION['error_message'] . "</div>";
     unset($_SESSION['error_message']);
@@ -19,8 +19,8 @@
   $seller_id = null;
   $auction_id = null;
 
-// TODO: Use item_id to make a query to the database.
-// extract seller_id for seller profile, remove example below
+// Get Auction details 
+
   $query = $connection->prepare("
     SELECT seller_id, auction_id
     FROM auction
@@ -53,6 +53,9 @@
   
   //testing, remove last line to stop testing!!
   $now= new DateTime();
+
+
+  //$now->modify("+5 years");
 
 
   
@@ -145,76 +148,81 @@
           $update_mail_query->close();
         }
 
-    #------emailing seller -----#
-    $seller_query = $connection->prepare("
-        SELECT u.first_name, u.email
-        FROM auction AS a
-        JOIN seller AS s ON a.seller_id = s.seller_id
-        JOIN users AS u ON s.user_id = u.user_id
-        WHERE a.auction_id = ?
+      #------emailing seller -----#
+      $seller_query = $connection->prepare("
+          SELECT u.first_name, u.email, a.mail_sent
+          FROM auction AS a
+          JOIN seller AS s ON a.seller_id = s.seller_id
+          JOIN users AS u ON s.user_id = u.user_id
+          WHERE a.auction_id = ?
       ");
-        $seller_query-> bind_param("i", $auction_id);
-        $seller_query->execute();
-        $seller_result = $seller_query->get_result();
-        if($seller_row = $seller_result->fetch_assoc()){
-          $seller_name = ucfirst($seller_row['first_name']);
-          $to = $seller_row['email'];
-          $subject = "SOLD: {$winning_bidder_item}";
-          $message = "
-          Dear {$seller_name},
+          $seller_query-> bind_param("i", $auction_id);
+          $seller_query->execute();
+          $seller_result = $seller_query->get_result();
+          if($seller_row = $seller_result->fetch_assoc()){
+            $seller_name = ucfirst($seller_row['first_name']);
+            $to = $seller_row['email'];
+            $subject = "SOLD: {$winning_bidder_item}";
+            $message = "
+            Dear {$seller_name},
 
-          Congratulations! Your auction for: '{$winning_bidder_item}'. 
-          Was bought with a bid of £{$winning_bidder_bid_amount}.
+            Congratulations! Your auction for: '{$winning_bidder_item}'. 
+            Was bought with a bid of £{$winning_bidder_bid_amount}.
+            
+            From 
+            The Auction Site
+            ";
+            $headers= "From: The Auction Site";
+
+            $headers= "From: The Auction Site";
+            mail($to, $subject, $message, $headers);
+          }
+          $seller_query->close();
+
+
+      
+      #-----sending updates to people watching it
+      $watchlist_query= $connection->prepare("
+          SELECT u.email, u.first_name
+          FROM watchlist AS w
+          JOIN users AS u ON w.user_id = u.user_id
+          JOIN auction AS a ON w.auction_id = a.auction_id
+          WHERE w.auction_id = ?
+      ");
+      $watchlist_query-> bind_param("i", $auction_id);
+      $watchlist_query-> execute();
+      $watchlist_result = $watchlist_query->get_result();
+      
+      while ($watcher_row=$watchlist_result->fetch_assoc()){
+          $watcher_name = ucfirst($watcher_row['first_name']);
+          $to = $watcher_row['email'];
+          $message ="
+          To {$watcher_name},
+
+          Someone won the auction for '{$winning_bidder_item}' that you are watching. With a bid of £{$winning_bidder_bid_amount}.
           
-          Please click here to leave feedback for the Buyer:
-          $link_for_seller
+          If you wish to stop recieving updates, please remove this item from your watchlist.
 
-          From 
-          The Auction Site
+          From The Auction_Site
           ";
-          $headers= "From: The Auction Site";
-
-          $headers= "From: The Auction Site";
-          mail($to, $subject, $message, $headers);
-        }
-        $seller_query->close();
-
-
-    
-    #-----sending updates to people watching it
-    $watchlist_query= $connection->prepare("
-        SELECT u.email, u.first_name
-        FROM watchlist AS w
-        JOIN users AS u ON w.user_id = u.user_id
-        WHERE w.auction_id = ?
-    ");
-    $watchlist_query-> bind_param("i", $auction_id);
-    $watchlist_query-> execute();
-    $watchlist_result = $watchlist_query->get_result();
-    
-    while ($watcher_row=$watchlist_result->fetch_assoc()){
-        $watcher_name = ucfirst($watcher_row['first_name']);
-        $to = $watcher_row['email'];
-        $message ="
-        To {$watcher_name},
-
-        Someone won the auction for '{$winning_bidder_item}' that you are watching. With a bid of £{$winning_bidder_bid_amount}.
-        
-        If you wish to stop recieving updates, please remove this item from your watchlist.
-
-        From The Auction_Site
-        ";
-        $subject = "Update: New activity on '{$winning_bidder_item}'";
-        $headers = "From: the auction_site";
-        $headers .= "Content-type: text/plain; charset=UTF-8";
-        mail($to, $subject, $message, $headers);
-    $watchlist_query->close();
+          $subject = "Update: New activity on '{$winning_bidder_item}'";
+          $headers = "From: the auction_site";
+          $headers .= "Content-type: text/plain; charset=UTF-8";
+          mail($to, $subject, $message, $headers); 
+      }
+      $watchlist_query->close();
     }
 
-
-    
+    #----- transaction update -----#
+    if ($winer_row && isset($winner_row['bid_id'])) {
+      $trans_query = $connection->prepare("
+            INSERT INTO `transaction` (bid_id) 
+            VALUES (?)");
+          $trans_query-> bind_param("i", $winner_row['bid_id']);
+          $trans_query->execute();
+          $trans_query->close(); 
     }
-}
+  }
     
 
 
@@ -276,8 +284,16 @@
 <div class="row"> <!-- Row #3 with auction description + bidding info -->
   <div class="col-sm-8"> <!-- blank left col--></div>
 
-  <div class="col-sm-4"> <!-- Right col with bidding info -->
-    <p><strong>Buy Now Price:</strong> £<?php echo number_format($auction["buy_now_price"], 2); ?></p>
+  <!-- Right col with bidding info -->
+<div class="col-sm-4"> <!-- Only shows buy now price if one is set and auction still live -->
+    <?php if (!is_null($auction["buy_now_price"]) && $now < $end_time): ?>
+      <p></p>
+      <form method="POST" action="buy_now.php" onsubmit="return confirm('Are you sure you want to buy this item now for £<?php echo number_format($auction['buy_now_price'], 2); ?>?');">
+        <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
+        <button type="submit" class="btn-info btn-sm">Buy Now at: £<?php echo number_format($auction["buy_now_price"], 2); ?></button>
+      </form>
+    <?php endif; ?>
+   
     <!-- check if auction ended -->
     <p><strong>
 <?php if ($now > $end_time): ?>
@@ -310,6 +326,33 @@
 
 </div> <!-- End of row #2 -->
 
+<!-- bid history -->
+<div class="row mt-4">
+  <div class="col-12">
+    <h4>Bid History</h4>
+    <?php
+      // gets bid history for this auction
+      $bid_history_sql = "
+        SELECT b.amount, b.date, u.username
+        FROM bids AS b
+        JOIN buyer AS buyer_t ON b.buyer_id = buyer_t.buyer_id
+        JOIN users AS u ON buyer_t.user_id = u.user_id
+        WHERE b.auction_id = ?
+        ORDER BY b.amount DESC, b.date ASC
+      ";
+
+      $bid_history_query = $connection->prepare($bid_history_sql);
+      $bid_history_query->bind_param("i", $auction_id);
+      $bid_history_query->execute();
+      $bid_history_result = $bid_history_query->get_result();
+
+      // sdisplays bid history using function in utilties 
+      list_bid_history($bid_history_result);
+
+      $bid_history_query->close();
+    ?>
+  </div>
+</div>
 
 
 <?php include_once("footer.php")?>

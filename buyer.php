@@ -12,7 +12,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 $tabs = [
   'mybids.php' => 'My Bids',
   'myorders.php' => 'My Orders',
-  'recommendations.php' => 'Recommendations',
+  'recommendations.php' => 'Recommendations For You',
   'recentlyviewed.php' => 'Recently Viewed',
   'watchlist.php' => 'Watchlist'
 ];
@@ -32,7 +32,7 @@ $tab_heading = $tabs[$current_tab];
   <!-- Tab heading -->
   <h2 class="mb-3"><?php echo htmlspecialchars($tab_heading); ?></h2>
   <!-- Load tab content -->
-  <div class="tab-content p-3 border rounded bg-light">
+  <div class="tab-content">
     <?php
       // Build the path safely
       if (file_exists($current_tab)) {

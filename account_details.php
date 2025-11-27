@@ -107,7 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <br><br>
-<button type= "submit">SUBMIT CHANGES</button>
+
+<button type="submit" class="btn btn-primary mt-2">SUBMIT CHANGES</button>
 
 </form>
 
