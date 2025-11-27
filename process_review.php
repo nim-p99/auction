@@ -4,7 +4,7 @@ include_once("header.php");
 require("utilities.php");
 
 if ($$_SERVER['REQUEST_METHOD'] !== 'POST'){
-    header("Location: pending_reviews.php");
+    header("Location: pending_review.php");
     exit();
 }
 
@@ -16,7 +16,7 @@ $review_type = $_POST['review_type']; #buyer_reviewing_seller or seller_reviewin
 //Validation
 if ($rating < 1 ||  $rating > 5){
     $_SESSION['error_message'] = "Invalid rating selected.";
-    header("Location: pending_reviews.php");
+    header("Location: pending_review.php");
     exit();
 }
 
@@ -99,6 +99,6 @@ if ($review_type === 'buyer_reviewing_seller'){
 }
 
 #redirect
-header("Location: pending_reviews.php");
+header("Location: pending_review.php");
 exit();
 ?>

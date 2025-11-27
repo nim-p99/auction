@@ -106,13 +106,8 @@
           VALUES (?)");
         $trans_query-> bind_param("i", $winner_row['bid_id']);
         $trans_query->execute();
-        $transaction_id = $trans_query->insert_id();
+        $transaction_id = $trans_query->insert_id;
         $trans_query->close(); 
-
-        #------Review link-----#
-        $base_url = "http://". $_SERVER['HTTP'] . "/auction/review.php";
-        $link_for_buyer = "$base_url?id=$transaction_id&role=buyer";
-        $link_for_seller = "$base_url?id=$transaction_id&role=seller";
 
         #-----email buyer -----#
 
@@ -129,9 +124,6 @@
         Congratulations! You won the auction: '{$winning_bidder_item}'. 
         With a bid of £{$winning_bidder_bid_amount}.
 
-        Please click here to leave feedback for the seller:
-        $link_for_buyer
-        
         From 
         The Auction Site
         ";
@@ -214,7 +206,7 @@
     }
 
     #----- transaction update -----#
-    if ($winer_row && isset($winner_row['bid_id'])) {
+    if ($winner_row && isset($winner_row['bid_id'])) {
       $trans_query = $connection->prepare("
             INSERT INTO `transaction` (bid_id) 
             VALUES (?)");
