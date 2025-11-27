@@ -183,14 +183,21 @@ else {
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
   $final_query .= " GROUP BY a.auction_id ";
   $final_query = sort_by($sort_by, $final_query);
+
+  // get total count before 
+  $count_result = mysqli_query($connection, $final_query);
+  $num_results = mysqli_num_rows($count_result);
+
+  // pagination LIMIT and OFFSET
+  // offset is subtracting 1 bec it needs to start at 0 to show 1-8
+  $results_per_page = 8;
+  $offset = ($curr_page - 1) * $results_per_page;
+  $final_query .= " LIMIT $results_per_page OFFSET $offset";
+
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings
   list_table_items($auctions_to_list);
-
-  // For pagination & pagnation calculations
-  
-  $num_results = mysqli_num_rows($auctions_to_list); //96;
 
   if ($num_results == 0 || $num_results == null)  {
       echo'<h4> No Auctions Found! </h4>';
@@ -199,10 +206,9 @@ else {
       }
       else{
           echo "<p>No auctions matched your filtering criteria. </p>";
-      }    
+      }
     }
 
-  $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
   </div>

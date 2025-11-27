@@ -204,6 +204,17 @@ else {
       $final_query .= " ORDER BY b.date DESC";
   }
   //$final_query = sort_by($sort_by, $final_query);
+
+  // get total count before
+  $count_result = mysqli_query($connection, $final_query);
+  $num_results = mysqli_num_rows($count_result);
+
+  // pagination LIMIT and OFFSET
+  // offset is subtracting 1 bec it needs to start at 0 to show 1-8
+  $results_per_page = 8;
+  $offset = ($curr_page - 1) * $results_per_page;
+  $final_query .= " LIMIT $results_per_page OFFSET $offset";
+
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings
@@ -213,11 +224,7 @@ else {
   } else {
     echo "<p>You haven't placed any bids yet.</p>";
   }
- 
-  // For pagination & pagnation calculations
-  
-  $num_results = mysqli_num_rows($auctions_to_list); //96;
-  $results_per_page = 10;
+
   $max_page = ceil($num_results / $results_per_page);
 ?>
   </div>
@@ -244,13 +251,13 @@ else {
   if ($curr_page != 1) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+      <a class="page-link" href="buyer.php?tab=mybids.php&' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
     </li>');
   }
-    
+
   for ($i = $low_page; $i <= $high_page; $i++) {
     if ($i == $curr_page) {
       // Highlight the link
@@ -262,17 +269,17 @@ else {
       echo('
     <li class="page-item">');
     }
-    
+
     // Do this in any case
     echo('
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+      <a class="page-link" href="buyer.php?tab=mybids.php&' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
-  
+
   if ($curr_page != $max_page) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+      <a class="page-link" href="buyer.php?tab=mybids.php&' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>

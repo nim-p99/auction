@@ -334,4 +334,43 @@ function list_user_bids($result) {
         print_bid_li($item_id, $title, $description, $bid_amount, $bid_date);
     }
     echo '</ul>';
+}
+
+// list_bid_history: only displays all bids for a specific auction in a table
+function list_bid_history($result) {
+    $num_bids = mysqli_num_rows($result); //gives number of results to correctly calculate
+    
+    if ($num_bids == 0) {
+        echo '<p class="text-muted">No bids have been placed yet.</p>';
+        return;
+    }
+    
+    echo '
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>Bidder</th>
+                <th>Bid amount</th>
+                <th>Date & Time</th>
+            </tr>
+        </thead>
+        <tbody>';
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        $username = htmlspecialchars($row['username']);
+        $amount = number_format($row['amount'], 2);
+        $date = htmlspecialchars($row['date']);
+        
+        echo "
+            <tr>
+                <td>{$username}</td>
+                <td>£{$amount}</td>
+                <td>{$date}</td>
+            </tr>";
+    }
+    
+    echo '
+        </tbody>
+    </table>';
+
 }?>
