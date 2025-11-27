@@ -44,7 +44,7 @@ require("utilities.php");
                     WHERE b.buyer_id = ? AND t.seller_rating IS NULL
                     ");
 
-                $sql_buyer->bind("i", $buyer_id);
+                $sql_buyer->bind_param("i", $buyer_id);
                 $sql_buyer->execute();
                 $result = $sql_buyer->get_result();
 

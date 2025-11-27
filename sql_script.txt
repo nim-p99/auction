@@ -88,8 +88,8 @@ CREATE TABLE auction (
   -- num_bids INT UNSIGNED,
   FOREIGN KEY (seller_id) REFERENCES seller(seller_id),
   FOREIGN KEY (item_id) REFERENCES item(item_id),
-  is_active BOOLEAN NOT NULL DEFAULT TRUE
-  main_sent BOOLEAN NOT NULL DEFAULT FALSE
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  mail_sent BOOLEAN NOT NULL DEFAULT FALSE
 )ENGINE=InnoDB;
 
 CREATE TABLE watchlist (
@@ -222,5 +222,5 @@ INSERT INTO message (message_id, seller_id, buyer_id, message, date) VALUES
 
 
 -- Transaction for Auction 502, won by buyer_id 1 with bid_id 1005.
-INSERT INTO transaction (bid_id, date, seller_rating, seller_comments, buyer_rating, buyer_comments) VALUES
-(1005, '2025-11-01 13:00:00', 4.50, 'Excellent communication, fast payment.', NULL, NULL); -- Buyer rating/comments are pending
+INSERT INTO transaction (bid_id,seller_rating, seller_comments, buyer_rating, buyer_comments) VALUES
+(1005, 4.50, 'Excellent communication, fast payment.', NULL, NULL); -- Buyer rating/comments are pending
