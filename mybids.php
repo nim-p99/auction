@@ -203,6 +203,20 @@ else {
     default:
       $final_query .= " ORDER BY b.date DESC";
   }
+
+// get total count before
+  $count_result = mysqli_query($connection, $final_query);
+  $num_results = mysqli_num_rows($count_result);
+
+  // pagination LIMIT and OFFSET
+  // offset is subtracting 1 bec it needs to start at 0 to show 1-8
+  $results_per_page = 8;
+  $offset = ($curr_page - 1) * $results_per_page;
+  $final_query .= " LIMIT $results_per_page OFFSET $offset";
+
+
+
+
   //$final_query = sort_by($sort_by, $final_query);
   $auctions_to_list = mysqli_query($connection, $final_query);
 
@@ -216,8 +230,6 @@ else {
  
   // For pagination & pagnation calculations
   
-  $num_results = mysqli_num_rows($auctions_to_list); //96;
-  $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
   </div>
@@ -244,7 +256,7 @@ else {
   if ($curr_page != 1) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+        <a class="page-link" href="buyer.php?tab=mybids.php&' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous"> 
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
@@ -265,14 +277,14 @@ else {
     
     // Do this in any case
     echo('
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+    <a class="page-link" href="buyer.php?tab=mybids.php&' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
   
   if ($curr_page != $max_page) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="mybids.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+        <a class="page-link" href="buyer.php?tab=mybids.php&' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>

@@ -305,6 +305,33 @@
 
 </div> <!-- End of row #2 -->
 
+<!-- bid history -->
+<div class="row mt-4">
+  <div class="col-12">
+    <h4>Bid History</h4>
+    <?php
+      // gets bid history for this auction
+      $bid_history_sql = "
+        SELECT b.amount, b.date, u.username
+        FROM bids AS b
+        JOIN buyer AS buyer_t ON b.buyer_id = buyer_t.buyer_id
+        JOIN users AS u ON buyer_t.user_id = u.user_id
+        WHERE b.auction_id = ?
+        ORDER BY b.amount DESC, b.date ASC
+      ";
+
+      $bid_history_query = $connection->prepare($bid_history_sql);
+      $bid_history_query->bind_param("i", $auction_id);
+      $bid_history_query->execute();
+      $bid_history_result = $bid_history_query->get_result();
+
+      // sdisplays bid history using function in utilties 
+      list_bid_history($bid_history_result);
+
+      $bid_history_query->close();
+    ?>
+  </div>
+</div>
 
 
 <?php include_once("footer.php")?>
