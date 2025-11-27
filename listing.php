@@ -182,9 +182,25 @@
   
   // TODO: If the user has a session, use it to make a query to the database
   //       to determine if the user is already watching this item.
-  //       For now, this is hardcoded.
-  $has_session = true;
+  //       For now, this is hardcoded. 
   $watching = false;
+  if (isset($_SESSION['user_id'])) {
+      $user_id = $_SESSION['user_id'];
+
+      $stmt = $connection->prepare("
+          SELECT 1 FROM watchlist 
+          WHERE user_id = ? AND auction_id = ?
+          LIMIT 1
+      ");
+      $stmt->bind_param("ii", $user_id, $auction_id);
+      $stmt->execute();
+      $stmt->store_result();
+
+      if ($stmt->num_rows > 0) {
+          $watching = true;
+      }
+      $stmt->close();
+}
 ?>
 
 
