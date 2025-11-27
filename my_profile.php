@@ -13,7 +13,7 @@ $sections = [
     'buyer' => ['mybids', 'orders', 'viewed', 'watchlist'],
     'seller' => ['listings', 'completed'],
     'account' => ['details', 'password', 'address'],
-    'messages' => ['inbox', 'sent'],
+    'messages' => ['inbox'],
 ];
 
 // get keys of associative array  
@@ -215,6 +215,32 @@ $seller_id = $_SESSION['seller_id'];
                 </div> <!-- end account tab content -->
             </div> <!-- end card body -->
         <?php endif; ?> <!-- end account dashboard section -->
+        <!-- ======================================================================== -->
+        <!--                         MESSAGES DASHBOARD CONTENT                         -->
+        <!-- ======================================================================== -->
+        <?php if ($current_section == 'messages'): ?>
+            <div class = "card">
+                <div class="card-header">
+                <!--- Horizontal sub tabs for seller dashboard --->
+                <ul class= "nav nav-tabs card-header-tabs" id="messages-dashboard-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'inbox') echo 'active'; ?>" 
+                        href="my_profile.php?section=messages&tab=inbox">My Inbox</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="account-tab-content">
+                    <!-- Account details Tab Content -->
+                    <div class="tab-pane fade <?php if ($current_tab == 'inbox') echo 'show active'; ?>" 
+                          id="inbox" role="tabpanel">
+                      <h5 class="card-title">My Inbox</h5>
+                      <p class="card-text"> Here you can view/send messages.</p>
+                      <?php include "inbox.php";?>
+                    </div>
+                </div> <!-- end message tab content -->
+            </div> <!-- end card body -->
+        <?php endif; ?> <!-- end messages dashboard section -->
 
 
 
