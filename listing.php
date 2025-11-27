@@ -96,6 +96,23 @@
   
     if (($winner_row = $winner_result->fetch_assoc()) && $winner_row['mail_sent'] !== 1) {
         $winner_id_query->close();
+
+        #----- transaction update -----#
+        $trans_query = $connection->prepare("
+          INSERT INTO transaction (bid_id) 
+          VALUES (?)");
+        $trans_query-> bind_param("i", $winner_row['bid_id']);
+        $trans_query->execute();
+        $transaction_id = $trans_query->insert_id();
+        $trans_query->close(); 
+
+        #------Review link-----#
+        $base_url = "http://". $_SERVER['HTTP'] . "/auction/review.php";
+        $link_for_buyer = "$base_url?id=$transaction_id&role=buyer";
+        $link_for_seller = "$base_url?id=$transaction_id&role=seller";
+
+        #-----email buyer -----#
+
         $winning_bidder_id = $winner_row['buyer_id'];
         $winning_bidder_name = ucfirst($winner_row['first_name']);
         $winning_bidder_item = $winner_row['title'];
@@ -108,11 +125,15 @@
 
         Congratulations! You won the auction: '{$winning_bidder_item}'. 
         With a bid of £{$winning_bidder_bid_amount}.
+
+        Please click here to leave feedback for the seller:
+        $link_for_buyer
         
         From 
         The Auction Site
         ";
         $headers= "From: The Auction Site";
+
         if(mail($to, $subject, $message, $headers)) {
           //if the mail sends update auction table to say mail sent
           $update_mail_query = $connection->prepare("
@@ -126,12 +147,12 @@
 
     #------emailing seller -----#
     $seller_query = $connection->prepare("
-        SELECT u.first_name, u.email, a.mail_sent
+        SELECT u.first_name, u.email
         FROM auction AS a
         JOIN seller AS s ON a.seller_id = s.seller_id
         JOIN users AS u ON s.user_id = u.user_id
         WHERE a.auction_id = ?
-    ");
+      ");
         $seller_query-> bind_param("i", $auction_id);
         $seller_query->execute();
         $seller_result = $seller_query->get_result();
@@ -145,6 +166,9 @@
           Congratulations! Your auction for: '{$winning_bidder_item}'. 
           Was bought with a bid of £{$winning_bidder_bid_amount}.
           
+          Please click here to leave feedback for the Buyer:
+          $link_for_seller
+
           From 
           The Auction Site
           ";
@@ -162,7 +186,6 @@
         SELECT u.email, u.first_name
         FROM watchlist AS w
         JOIN users AS u ON w.user_id = u.user_id
-        JOIN auction AS a ON w.auction_id = a.auction_id
         WHERE w.auction_id = ?
     ");
     $watchlist_query-> bind_param("i", $auction_id);
@@ -189,13 +212,7 @@
     }
 
 
-    #----- transaction update -----#
-    $trans_query = $connection->prepare("
-          INSERT INTO transaction (bid_id) 
-          VALUES (?)");
-        $trans_query-> bind_param("i", $winner_row['bid_id']);
-        $trans_query->execute();
-        $trans_query->close(); 
+    
     }
 }
     

@@ -301,3 +301,65 @@ function list_account_details($table) { ?>
 <?php } ?>
 
 
+
+<?php
+
+function update_seller_average($connection, $seller_id){
+  #cal average
+  $query = $connection->prepare("
+    SELECT AVG(t.seller_rating) as new_avg
+    FROM  transactions AS t
+    JOIN bids AS b ON t.bid_id = b.bid_id
+    JOIN auction AS a ON b.acution_id = a.auction_id
+    WHERE a.seller_id = ? AND t.seller_rating IS NOT NULL
+    ");
+  
+  $query->bind_param("i", $seller_id);
+  $query->execute();
+  $result= $query->get_result();
+  $row=$result->fetch_assoc();
+  $new_avg = $row['new_avg'];
+  $query->close();
+
+  #update seller table
+  if ($new_avg !== null){
+    $query = $connection->prepare("
+      UPDATE seller SET avg_seller_rating = ? WHERE seller_id =?
+      ");  
+    $query->bind_param("di", $new_avg, $seller_id);
+    $query->execute();
+    $query->close();
+  }
+}
+
+function update_buyer_average($connection, $buyer_id){
+  #cal average
+  $query = $connection->prepare("
+    SELECT AVG(t.buyer_rating) as new_avg
+    FROM  transactions AS t
+    JOIN bids AS b ON t.bid_id = b.bid_id
+    JOIN auction AS a ON b.acution_id = a.auction_id
+    WHERE a.buyer_id = ? AND t.buyer_rating IS NOT NULL
+    ");
+  
+  $query->bind_param("i", $buyer_id);
+  $query->execute();
+  $result= $query->get_result();
+  $row=$result->fetch_assoc();
+  $new_avg = $row['new_avg'];
+  $query->close();
+
+  #update buyer table
+  if ($new_avg !== null){
+    $query = $connection->prepare("
+      UPDATE seller SET avg_buyer = ? WHERE buyer_id =?
+      ");  
+    $query->bind_param("di", $new_avg, $buyer_id);
+    $query->execute();
+    $query->close();
+  }
+}
+
+?>
+
+

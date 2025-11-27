@@ -177,6 +177,9 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
       </li>  
     <li class="nav-item ml-3">
         <a class="nav-link btn border-light" href="create_auction.php">+ Create auction</a>
+      </li>
+    <li class="nav-item ml-3">
+        <a class="nav-link btn border-light" href="pending_review.php">Pending Reviews</a>
       </li>'
       );
     }
@@ -188,6 +191,9 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
       </li>
     <li class="nav-item mx-1">
         <a class="nav-link" href="buyer.php?tab=mybids.php">My Bids</a>
+      </li>
+    <li class="nav-item ml-3">
+        <a class="nav-link btn border-light" href="pending_review.php">Pending Reviews</a>
       </li>
     <li class="nav-item mx-1">
         <a class="nav-link" href="buyer.php?tab=recommendations.php">Recommendations</a>
