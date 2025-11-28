@@ -43,8 +43,8 @@ require("utilities.php");
                 <?php  
                 $buyer_id = $_SESSION['buyer_id'];
                 //find transactions where I am the buyer but seller_rating is NULL
-                $sql_buyer = $connection->prepare("
-                    SELECT  t.transaction_id, i.title, i.item_id, a.auction_id, u.username AS seller_name
+                $sql_buyer = $connection->prepare(
+                    "SELECT  t.transaction_id, i.title, i.item_id, a.auction_id, u.username AS seller_name
                     FROM transaction AS t
                     JOIN bids AS b ON t.bid_id = b.bid_id
                     JOIN auction AS a On b.auction_id = a.auction_id
@@ -53,6 +53,7 @@ require("utilities.php");
                     JOIN users AS u ON s.user_id =  u.user_id
                     WHERE b.buyer_id = ? AND t.seller_rating IS NULL
                     GROUP BY a.auction_id
+                    ORDER BY b.date DESC
                     ");
 
                 $sql_buyer->bind_param("i", $buyer_id);
@@ -88,8 +89,8 @@ require("utilities.php");
                 <tbody>
                 <?php
                 $seller_id = $_SESSION['seller_id'];
-                $sql_seller = $connection->prepare("
-                    SELECT t.transaction_id, i.title, i.item_id,u.username AS buyer_name
+                $sql_seller = $connection->prepare(
+                    "SELECT t.transaction_id, i.title, i.item_id,u.username AS buyer_name
                     FROM transaction AS t
                     JOIN bids AS b ON t.bid_id = b.bid_id
                     JOIN buyer AS byr ON b.buyer_id = byr.buyer_id
@@ -98,7 +99,7 @@ require("utilities.php");
                     JOIN item AS i ON a.item_id = i.item_id
                     WHERE a.seller_id = ? AND t.buyer_rating IS NULL
                     GROUP BY a.auction_id
-
+                    ORDER BY b.date DESC
                 ");
 
                 $sql_seller->bind_param("i", $seller_id);
@@ -121,54 +122,6 @@ require("utilities.php");
     </div>
 </div>
 
-
-
-<?php
-// review card
-function render_review_card($transaction_id, $title, $subtitle, $item_id, $review_type){
-    // Create a unique ID for this specific form
-    $form_id = "review_form_" . $transaction_id;
-?>
-    <tr>
-        <td class="align-middle">
-            <a href="listing.php?item_id=<?php echo $item_id; ?>" class="font-weight-bold">
-                <?php echo htmlspecialchars($title);?>
-            </a>
-            <br>
-            <small class="text-muted"><?php echo htmlspecialchars($subtitle);?></small>
-        </td>
-            
-        <td class="align-middle">
-            <select class="custom-select" form="<?php echo $form_id; ?>" name="rating" required>
-                <option value="" disabled selected>Rate (1-5)</option>
-                <option value="5">5 Stars - Excellent</option>
-                <option value="4">4 Stars - Good</option>
-                <option value="3">3 Stars - Average</option>
-                <option value="2">2 Stars - Poor</option>
-                <option value="1">1 Star - Very Poor</option> 
-            </select>
-        </td>
-
-        <td class="align-middle">
-            <textarea 
-                class="form-control w-100 p-1" 
-                form="<?php echo $form_id; ?>"
-                name="comment" rows="2" 
-                style="min-width: 100%; resize: none; border-radius: 5px;"
-                placeholder="Share your experience (optional)..." 
-                maxlength="255"></textarea>
-        </td>
-
-        <td class="align-middle text-center">
-            <form id="<?php echo $form_id; ?>" action="process_review.php" method="POST">
-                <input type="hidden" name="transaction_id" value="<?php echo $transaction_id;?>">
-                <input type="hidden" name="review_type" value="<?php echo $review_type;?>">
-                
-                <button type="submit" class="btn btn-primary mb-2">Submit</button>
-            </form>
-        </td>
-    </tr>
-<?php } ?>
 <?php include_once("footer.php");?>
 
 

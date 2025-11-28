@@ -435,3 +435,49 @@ function list_bid_history($result) {
         </tbody>
     </table>';
 }?>
+
+<?php 
+function render_review_card($transaction_id, $title, $subtitle, $item_id, $review_type){
+    // Create a unique ID for this specific form
+    $form_id = "review_form_" . $transaction_id;
+?>
+    <tr>
+        <td class="align-middle">
+            <a href="listing.php?item_id=<?php echo $item_id; ?>" class="font-weight-bold">
+                <?php echo htmlspecialchars($title);?>
+            </a>
+            <br>
+            <small class="text-muted"><?php echo htmlspecialchars($subtitle);?></small>
+        </td>
+            
+        <td class="align-middle">
+            <select class="custom-select" form="<?php echo $form_id; ?>" name="rating" required>
+                <option value="" disabled selected>Rate (1-5)</option>
+                <option value="5">5 Stars - Excellent</option>
+                <option value="4">4 Stars - Good</option>
+                <option value="3">3 Stars - Average</option>
+                <option value="2">2 Stars - Poor</option>
+                <option value="1">1 Star - Very Poor</option> 
+            </select>
+        </td>
+
+        <td class="align-middle">
+            <textarea 
+                class="form-control w-100 p-1" 
+                form="<?php echo $form_id; ?>"
+                name="comment" rows="2" 
+                style="min-width: 100%; resize: none; border-radius: 5px;"
+                placeholder="Share your experience (optional)..." 
+                maxlength="255"></textarea>
+        </td>
+
+        <td class="align-middle text-center">
+            <form id="<?php echo $form_id; ?>" action="process_review.php" method="POST">
+                <input type="hidden" name="transaction_id" value="<?php echo $transaction_id;?>">
+                <input type="hidden" name="review_type" value="<?php echo $review_type;?>">
+                
+                <button type="submit" class="btn btn-primary mb-2">Submit</button>
+            </form>
+        </td>
+    </tr>
+<?php } ?>
