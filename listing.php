@@ -51,6 +51,15 @@
   $get_end_time = $auction["end_date_time"];
   $end_time = new DateTime($get_end_time);
   
+  if (isset($auction['start_date_time'])) {
+      $start_time = new DateTime($auction['start_date_time']);
+  } elseif (isset($auction['start_date'])) {
+      $start_time = new DateTime($auction['start_date']);
+  } else {
+      // If no start time exists in DB, assume it started in the past (always active)
+      $start_time = new DateTime("2000-01-01");
+  }
+
   //testing, remove last line to stop testing!!
   $now= new DateTime();
 
@@ -223,8 +232,8 @@
 
 
   // TODO: Note: Auctions that have ended may pull a different set of data,
-  //       like whether the auction ended in a sale or was cancelled due
-  //       to lack of high-enough bids. Or maybe not.
+  //      like whether the auction ended in a sale or was cancelled due
+  //      to lack of high-enough bids. Or maybe not.
   
   // Calculate time to auction end:
   if ($now < $end_time) {
@@ -233,8 +242,8 @@
   }
   
   // TODO: If the user has a session, use it to make a query to the database
-  //       to determine if the user is already watching this item.
-  //       For now, this is hardcoded. 
+  //      to determine if the user is already watching this item.
+  //      For now, this is hardcoded. 
   $has_session = true;
   
   $query = $connection->prepare("SELECT watchlist_id FROM watchlist WHERE user_id = ? AND auction_ID = ?");
@@ -249,15 +258,12 @@
 
 <div class="container">
 
-<div class="row"> <!-- Row #1 with auction title + watch button -->
-  <div class="col-sm-8"> <!-- Left col -->
-    <h2 class="my-3"><?php echo($auction['title']); ?></h2>
+<div class="row"> <div class="col-sm-8"> <h2 class="my-3"><?php echo($auction['title']); ?></h2>
   </div>
   <div class="col-sm-8"> 
     <p class="my-3"><?php echo($auction['description']); ?></p>
   </div>
-  <div class="col-sm-4 align-self-center"> <!-- Right col -->
-<?php
+  <div class="col-sm-4 align-self-center"> <?php
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
@@ -276,12 +282,9 @@
 
 
 
-<div class="row"> <!-- Row #3 with auction description + bidding info -->
-  <div class="col-sm-8"> <!-- blank left col--></div>
+<div class="row"> <div class="col-sm-8"> </div>
 
-  <!-- Right col with bidding info -->
-<div class="col-sm-4"> <!-- Only shows buy now price if one is set and auction still live -->
-    <?php if (!is_null($auction["buy_now_price"]) && $now < $end_time): ?>
+  <div class="col-sm-4"> <?php if (!is_null($auction["buy_now_price"]) && $now < $end_time && $now >= $start_time): ?>
       <p></p>
       <form method="POST" action="buy_now.php" onsubmit="return confirm('Are you sure you want to buy this item now for £<?php echo number_format($auction['buy_now_price'], 2); ?>?');">
         <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
@@ -289,17 +292,16 @@
       </form>
     <?php endif; ?>
    
-    <!-- check if auction ended -->
-    <p><strong>
-<?php if ($now > $end_time): ?>
+    <?php if ($now > $end_time): ?>
      <p>This auction ended <?php echo(date_format($end_time, 'j M H:i'))?></p>
      <p>Winning bid: £<?php echo(number_format($highest_bid, 2))?></p>
-     <!-- TODO: Print the result of the auction here? -->
+     <?php elseif ($now < $start_time): ?>
+     <p>This auction starts on <?php echo(date_format($start_time, 'j M H:i'))?></p>
+     <p class="lead">Starting bid: £<?php echo(number_format($auction['start_bid'], 2)) ?></p>
 <?php else: ?>
-     Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
+     <p>Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
     <p class="lead">Current bid: £<?php echo(number_format($highest_bid, 2)) ?></p>
 
-    <!-- Bidding form -->
     <?php if($_SESSION['user_id']!==1){ ?>
       <form method="POST" action="place_bid.php">
         <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
@@ -317,12 +319,7 @@
 <?php endif ?>
 
   
-  </div> <!-- End of right col with bidding info -->
-
-</div> <!-- End of row #2 -->
-
-<!-- bid history -->
-<div class="row mt-4">
+  </div> </div> <div class="row mt-4">
   <div class="col-12">
     <h4>Bid History</h4>
     <?php
