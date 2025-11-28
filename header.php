@@ -4,6 +4,9 @@
   // ONLY after the user's login credentials have been verified via a 
   // database query.
 session_start();
+
+date_default_timezone_set('Europe/London');
+
 require_once 'database.php';
 
 
