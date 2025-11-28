@@ -204,7 +204,7 @@ else {
     JOIN item AS i ON a.item_id = i.item_id
     JOIN category AS c ON c.category_id = i.category_id
     LEFT JOIN bids AS b ON b.auction_id = a.auction_id
-    WHERE a.seller_id = $seller_id
+    WHERE a.seller_id = $seller_id AND a.end_date_time > NOW()
     ";
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
