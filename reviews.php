@@ -39,12 +39,6 @@ else {
   echo ('<h2 class="my-3">' . $seller_username . " 's " . $review_type . ' reviews</h2>');
   echo('<p class="text-muted">' . 'Average Rating: ' . $seller_avg_rating . '</p>' );
   
-  // TODO: Check user's credentials (cookie/session).
-  
-  // TODO: Perform a query to pull up their reviews.
-  
-
-  // TODO: Loop through results and print them out
 
 
 if (isset($_SESSION['seller_id'])): ?>

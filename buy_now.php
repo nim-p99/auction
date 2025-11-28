@@ -12,8 +12,9 @@ $auction_id = $_POST['auction_id'];
 
 // gets auction details
 $auction_query = $connection->prepare("
-    SELECT a.buy_now_price, a.item_id
+    SELECT a.buy_now_price, a.item_id, s.user_id, a.item_id
     FROM auction a
+    JOIN seller AS s ON a.seller_id = s.seller_id
     WHERE a.auction_id = ?
 ");
 $auction_query->bind_param("i", $auction_id);
@@ -26,6 +27,12 @@ $auction_query->close();
 if (!$auction) {
     $_SESSION['error_message'] = "Auction not found.";
     header("Location: browse.php");
+    exit();
+}
+
+if ($auction['user_id'] == $_SESSION['user_id']){
+    $_SESSION['error_message'] = "You cannot buy your own item.";
+    header("Location: listing.php?item_id=" . $auction['item_id'] );
     exit();
 }
 
