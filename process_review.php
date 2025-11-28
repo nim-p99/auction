@@ -3,7 +3,7 @@
 include_once("header.php");
 require("utilities.php");
 
-if ($$_SERVER['REQUEST_METHOD'] !== 'POST'){
+if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
     header("Location: pending_review.php");
     exit();
 }
@@ -23,7 +23,7 @@ if ($rating < 1 ||  $rating > 5){
 if ($review_type === 'buyer_reviewing_seller'){
     //update transaction
     $update_sql = $connection->prepare(
-        "UPDATE transaction set seller_rating = ?, seller_comments= ? 
+        "UPDATE transaction SET seller_rating = ?, seller_comments= ? 
         WHERE transaction_id = ?");
     $update_sql->bind_param("isi", $rating, $comment, $transaction_id);
 
@@ -40,8 +40,8 @@ if ($review_type === 'buyer_reviewing_seller'){
 
         $find_seller_sql->bind_param("i", $transaction_id);
         $find_seller_sql->execute();
-        $result = $find_seller_sql->result();
-        $targer_seller_id = Null;
+        $result = $find_seller_sql->get_result();
+        $target_seller_id = Null;
 
         if ($row  = $result->fetch_assoc()){
             $target_seller_id = $row['seller_id'];
@@ -64,16 +64,16 @@ if ($review_type === 'buyer_reviewing_seller'){
         UPDATE transaction SET buyer_rating = ?, buyer_comments = ?
         WHERE transaction_id  =?
     ");
-    $update_sql-> bind("isi", $rating, $comment, $transaction_id);
+    $update_sql-> bind_param("isi", $rating, $comment, $transaction_id);
 
-    if ($update_sql->execute){
+    if ($update_sql->execute()){
         $update_sql->close();
 
         #getting buyer_id
-        $find_byer_sql = $connection->preapre("
+        $find_byer_sql = $connection->prepare("
             SELECT b.buyer_id
             FROM transaction AS t
-            JOIN bids AS b ON t.bid_id = bid_id
+            JOIN bids AS b ON t.bid_id = b.bid_id
             WHERE t.transaction_id = ?
         ");
         $find_byer_sql->bind_param("i", $transaction_id);

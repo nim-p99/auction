@@ -308,9 +308,9 @@ function update_seller_average($connection, $seller_id){
   #cal average
   $query = $connection->prepare("
     SELECT AVG(t.seller_rating) as new_avg
-    FROM  transactions AS t
+    FROM  transaction AS t
     JOIN bids AS b ON t.bid_id = b.bid_id
-    JOIN auction AS a ON b.acution_id = a.auction_id
+    JOIN auction AS a ON b.auction_id = a.auction_id
     WHERE a.seller_id = ? AND t.seller_rating IS NOT NULL
     ");
   
@@ -336,10 +336,9 @@ function update_buyer_average($connection, $buyer_id){
   #cal average
   $query = $connection->prepare("
     SELECT AVG(t.buyer_rating) as new_avg
-    FROM  transactions AS t
+    FROM  transaction AS t
     JOIN bids AS b ON t.bid_id = b.bid_id
-    JOIN auction AS a ON b.acution_id = a.auction_id
-    WHERE a.buyer_id = ? AND t.buyer_rating IS NOT NULL
+    WHERE b.buyer_id = ? AND t.buyer_rating IS NOT NULL
     ");
   
   $query->bind_param("i", $buyer_id);
@@ -352,7 +351,7 @@ function update_buyer_average($connection, $buyer_id){
   #update buyer table
   if ($new_avg !== null){
     $query = $connection->prepare("
-      UPDATE seller SET avg_buyer = ? WHERE buyer_id =?
+      UPDATE buyer SET avg_buyer_rating = ? WHERE buyer_id =?
       ");  
     $query->bind_param("di", $new_avg, $buyer_id);
     $query->execute();

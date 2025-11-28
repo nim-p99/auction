@@ -101,13 +101,26 @@
         $winner_id_query->close();
 
         #----- transaction update -----#
-        $trans_query = $connection->prepare("
-          INSERT INTO transaction (bid_id) 
-          VALUES (?)");
-        $trans_query-> bind_param("i", $winner_row['bid_id']);
-        $trans_query->execute();
-        $transaction_id = $trans_query->insert_id;
-        $trans_query->close(); 
+          #-checking if transcation for this item already exists --> preventing duplicates
+
+        $check =$connection->prepare("
+          SELECT transaction_id FROM transaction WHERE bid_id = ?
+        ");
+        $check->bind_param("i", $winner_row['bid_id']);
+        $check->execute();
+        $check_result = $check->get_result();
+
+        if (!$check_result->fetch_assoc()) {
+          $check->close();        
+          $trans_query = $connection->prepare("
+            INSERT INTO transaction (bid_id) 
+            VALUES (?)");
+          $trans_query-> bind_param("i", $winner_row['bid_id']);
+          $trans_query->execute();
+          $transaction_id = $trans_query->insert_id;
+          $trans_query->close(); 
+        }
+        
 
         #-----email buyer -----#
 
@@ -203,16 +216,6 @@
           mail($to, $subject, $message, $headers); 
       }
       $watchlist_query->close();
-    }
-
-    #----- transaction update -----#
-    if ($winner_row && isset($winner_row['bid_id'])) {
-      $trans_query = $connection->prepare("
-            INSERT INTO `transaction` (bid_id) 
-            VALUES (?)");
-          $trans_query-> bind_param("i", $winner_row['bid_id']);
-          $trans_query->execute();
-          $trans_query->close(); 
     }
   }
     
