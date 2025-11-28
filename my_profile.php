@@ -143,7 +143,7 @@ $seller_id = $_SESSION['seller_id'];
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=completed">Completed Auctions</a>
+                        href="my_profile.php?section=seller&tab=completed">Past Listings</a>
                     </li>
                 </ul>
             </div>
@@ -160,8 +160,8 @@ $seller_id = $_SESSION['seller_id'];
                     <!-- Completed Auctions tab content -->
                     <div class="tab-pane fade <?php if ($current_tab == 'completed') echo 'show active'; ?>" 
                           id="completed" role="tabpanel">
-                      <h5 class="card-title">Completed Auctions</h5>
-                      <p class="card-text"> Here you can view all of your completed auctions.</p>
+                      <h5 class="card-title">Past Listings</h5>
+                      <p class="card-text"> Here you can view all of your past listings.</p>
                       <?php include "completed_auctions.php";?>
                     </div>
                 </div> <!-- end seller tab content -->
