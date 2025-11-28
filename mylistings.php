@@ -126,7 +126,6 @@ else {
      <!-- Sort by -->
     <div class="col-md-3 pr-0">
       <div class="form-inline">
-        <label class="mx-2" for="order_by">Sort by:</label>
         <select class="form-control" id="order_by" name="sort">
         <?php
           $sort_options = [

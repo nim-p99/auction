@@ -49,12 +49,12 @@ $seller_id = $_SESSION['seller_id'];
                    href="my_profile.php?section=buyer"><!-- Buyer Dashboard link -->
                     <i class="fa fa-shopping-basket fa-fw mr-2"></i> Buyer Dashboard
                 </a>
-
-                <a class= "nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
-                  href="my_profile.php?section=seller"><!-- Seller Dashboard link -->
-                    <i class="fa fa-gavel fa-fw mr-2"></i> Seller Dashboard
-                </a>
-
+                <?php if(isset($_SESSION['seller_id'])):?>
+                    <a class= "nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
+                    href="my_profile.php?section=seller"><!-- Seller Dashboard link -->
+                        <i class="fa fa-gavel fa-fw mr-2"></i> Seller Dashboard
+                    </a>
+                <?php endif ?>
                 <a class= "nav-link <?php if ($current_section == 'account') echo 'active'; ?>" 
                    href="my_profile.php?section=account"><!-- Account Settings link -->
                     <i class="fa fa-user-circle fa-fw mr-2"></i> Account Settings
