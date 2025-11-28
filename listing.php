@@ -73,7 +73,7 @@
   
   
 
-  // get highest bid 
+    // get highest bid 
   $highest_bid_sql = "
     SELECT MAX(amount) AS highest_bid
     FROM bids
@@ -111,6 +111,31 @@
   
     if (($winner_row = $winner_result->fetch_assoc()) && $winner_row['mail_sent'] !== 1) {
         $winner_id_query->close();
+
+        #----- transaction update -----#
+          #-checking if transcation for this item already exists --> preventing duplicates
+
+        $check =$connection->prepare("
+          SELECT transaction_id FROM transaction WHERE bid_id = ?
+        ");
+        $check->bind_param("i", $winner_row['bid_id']);
+        $check->execute();
+        $check_result = $check->get_result();
+
+        if (!$check_result->fetch_assoc()) {
+          $check->close();        
+          $trans_query = $connection->prepare("
+            INSERT INTO transaction (bid_id) 
+            VALUES (?)");
+          $trans_query-> bind_param("i", $winner_row['bid_id']);
+          $trans_query->execute();
+          $transaction_id = $trans_query->insert_id;
+          $trans_query->close(); 
+        }
+        
+
+        #-----email buyer -----#
+
         $winning_bidder_id = $winner_row['buyer_id'];
         $winning_bidder_name = ucfirst($winner_row['first_name']);
         $winning_bidder_item = $winner_row['title'];
@@ -123,11 +148,12 @@
 
         Congratulations! You won the auction: '{$winning_bidder_item}'. 
         With a bid of £{$winning_bidder_bid_amount}.
-        
+
         From 
         The Auction Site
         ";
         $headers= "From: The Auction Site";
+
         if(mail($to, $subject, $message, $headers)) {
           //if the mail sends update auction table to say mail sent
           $update_mail_query = $connection->prepare("
@@ -203,19 +229,7 @@
       }
       $watchlist_query->close();
     }
-
-    #----- transaction update -----#
-    if ($winer_row && isset($winner_row['bid_id'])) {
-      $trans_query = $connection->prepare("
-            INSERT INTO `transaction` (bid_id) 
-            VALUES (?)");
-          $trans_query-> bind_param("i", $winner_row['bid_id']);
-          $trans_query->execute();
-          $trans_query->close(); 
-    }
   }
-    
-
 
 
   // TODO: Note: Auctions that have ended may pull a different set of data,
@@ -415,6 +429,7 @@ function removeFromWatchlist(button) {
 
 } // End of addToWatchlist func
 </script>
+
 
 
 
