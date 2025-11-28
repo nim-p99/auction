@@ -1,257 +1,202 @@
 <?php
-ob_start();
-include_once "header.php";
-include_once "utilities.php";
+include_once "includes/header.php";
+require_once "includes/utilities.php";
 
+// 1. Access Control
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-  header("Location: login.php");
-  exit();
+    header("Location: " . BASE_URL . "/login.php");
+    exit();
 }
 
-// Define all allowed sections and their tabs
+$username = $_SESSION['username'];
+$seller_id = $_SESSION['seller_id'] ?? null;
+
+// 2. Define Sections
 $sections = [
-    'buyer' => ['mybids', 'orders', 'viewed', 'watchlist'],
+    'buyer' => ['mybids', 'orders', 'recommendations', 'watchlist'],
     'seller' => ['listings', 'completed'],
     'account' => ['details', 'password', 'address'],
     'messages' => ['inbox'],
 ];
 
-// get keys of associative array  
-$allowed_section = array_keys($sections);
+// 3. Map Short Names to Real Filenames
+$file_mapping = [
+    // Buyer
+    'mybids'          => 'mybids.php',
+    'orders'          => 'myorders.php',
+    'recommendations' => 'recommendations.php',
+    'watchlist'       => 'watchlist.php',
+    
+    // Seller
+    'listings'        => 'mylistings.php',
+    'completed'       => 'completed_auctions.php',
+    
+    // Account
+    'details'         => 'account_details.php',
+    'password'        => 'password_details.php',
+    'address'         => 'address_details.php',
+    
+    // Messages
+    'inbox'           => 'inbox.php'
+];
 
-// Get section and tab from URL, or set defaults
-$current_section = $_GET['section'] ?? 'buyer'; // default to 'buyer' section
+// 4. Determine Current Section and Tab
+$allowed_section = array_keys($sections);
+$current_section = $_GET['section'] ?? 'buyer'; 
+
 if (!in_array($current_section, $allowed_section)) {
-    $current_section = 'buyer'; // default to buyer if invalid
+    $current_section = 'buyer'; 
 }
+
 $current_tab = $_GET['tab'] ?? $sections[$current_section][0]; 
 
-// get and validate filter/sort options all pages in this profile area
-$filter_cat = $_GET['cat'] ?? 'fill'; // default to 'all' categories
-$sort_by = $_GET['sort'] ?? 'date_asc'; // default to 'date_asc'
+// Validation: Ensure the tab belongs to the section
+if (!in_array($current_tab, $sections[$current_section])) {
+    $current_tab = $sections[$current_section][0];
+}
 
-
-
-$seller_id = $_SESSION['seller_id'];
+// 5. Construct Path
+$real_filename = $file_mapping[$current_tab];
+$tab_path = __DIR__ . '/partials/' . $real_filename;
 ?>
 
-<div class="container mt-4 mb-4"> <!-- mt and mb are margin top and bottom -->
-    <h2 class= "my-3">My Profile </h2> 
+<div class="container mt-4 mb-4">
+    <h2 class="my-3">My Profile</h2> 
     <p class="lead"> Welcome back, <?php echo htmlspecialchars($username); ?>! </p>
 
-    <div class = "row">
+    <div class="row">
 
-        <!-- vertical sidebar navigation -->
         <div class="col-md-3">
-            <div class= "nav flex-column nav-pills" id="profile-sections" role="tablist" aria-orientation="vertical">
+            <div class="nav flex-column nav-pills" id="profile-sections" role="tablist" aria-orientation="vertical">
                 
-                <a class= "nav-link <?php if ($current_section == 'buyer') echo 'active'; ?>" 
-                   href="my_profile.php?section=buyer"><!-- Buyer Dashboard link -->
+                <a class="nav-link <?php if ($current_section == 'buyer') echo 'active'; ?>" 
+                   href="<?php echo BASE_URL; ?>/my_profile.php?section=buyer">
                     <i class="fa fa-shopping-basket fa-fw mr-2"></i> Buyer Dashboard
                 </a>
 
-                <a class= "nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
-                  href="my_profile.php?section=seller"><!-- Seller Dashboard link -->
+                <?php if ($seller_id): ?>
+                <a class="nav-link <?php if ($current_section == 'seller') echo 'active'; ?>" 
+                   href="<?php echo BASE_URL; ?>/my_profile.php?section=seller">
                     <i class="fa fa-gavel fa-fw mr-2"></i> Seller Dashboard
                 </a>
+                <?php endif; ?>
 
-                <a class= "nav-link <?php if ($current_section == 'account') echo 'active'; ?>" 
-                   href="my_profile.php?section=account"><!-- Account Settings link -->
+                <a class="nav-link <?php if ($current_section == 'account') echo 'active'; ?>" 
+                   href="<?php echo BASE_URL; ?>/my_profile.php?section=account">
                     <i class="fa fa-user-circle fa-fw mr-2"></i> Account Settings
                 </a>
-                <a class= "nav-link <?php if ($current_section == 'messages') echo 'active'; ?>" 
-                   href="my_profile.php?section=messages"><!-- Messages link -->
+                
+                <a class="nav-link <?php if ($current_section == 'messages') echo 'active'; ?>" 
+                   href="<?php echo BASE_URL; ?>/my_profile.php?section=messages">
                     <i class="fa fa-envelope fa-fw mr-2"></i> Messages
                 </a>    
             </div>
-        </div> <!-- end sidebar column -->
-        <!-- Main content area -->
+        </div> 
+        
         <div class="col-md-9">
 
-        <!-- ======================================================================== -->
-        <!--                         BUYER DASHBOARD CONTENT                         -->
-        <!-- ======================================================================== -->
         <?php if ($current_section == 'buyer'): ?>
-            <div class = "card">
+            <div class="card">
                 <div class="card-header">
-                <!--- Horizontal sub tabs for buyer dashboard --->
-                <ul class= "nav nav-tabs card-header-tabs" id="buyer-dashboard-tabs" role="tablist">
+                <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'mybids') echo 'active'; ?>" 
-                           href="my_profile.php?section=buyer&tab=mybids">My Bids</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=buyer&tab=mybids">My Bids</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'orders') echo 'active'; ?>" 
-                           href="my_profile.php?section=buyer&tab=orders">My Orders</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=buyer&tab=orders">My Orders</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php if ($current_tab == 'viewed') echo 'active'; ?>" 
-                           href="my_profile.php?section=buyer&tab=viewed">Recently Viewed</a>
+                        <a class="nav-link <?php if ($current_tab == 'recommendations') echo 'active'; ?>" 
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=buyer&tab=recommendations">Recommendations</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'watchlist') echo 'active'; ?>" 
-                           href="my_profile.php?section=buyer&tab=watchlist">Watchlist</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=buyer&tab=watchlist">Watchlist</a>
                     </li>
                 </ul>
+                </div>
+                <div class="card-body">
+                    <?php 
+                        if (file_exists($tab_path)) { include $tab_path; } 
+                        else { echo "<div class='alert alert-danger'>Error: File '$real_filename' not found.</div>"; }
+                    ?>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="tab-content" id="buyer-tab-content">
-                    
-                    <!-- My Bids Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'mybids') echo 'show active'; ?>" 
-                          id="mybids" role="tabpanel">
-                      <h5 class="card-title">My Bids</h5>
-                      <p class="card-text"> Here you can view all the bids you made. </p>
-                      <?php include "mybids.php";?>
-                    </div>
-                    <!-- My Orders tab content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'orders') echo 'show active'; ?>" 
-                          id="orders" role="tabpanel">
-                      <h5 class="card-title">My Orders</h5>
-                      <p class="card-text"> Here you can view all of your orders</p>
-                      <?php include "myorders.php";?>
-                    </div>
-                    <!-- Recently viewed tab content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'viewed') echo 'show active'; ?>" 
-                          id="viewed" role="tabpanel">
-                      <h5 class="card-title">Recently viewed</h5>
-                      <p class="card-text"> Here you can view all items you recently viewed</p>
-                      <?php include "recentlyviewed.php";?>
-                    </div>
-                    <!-- Watchlist tab content --> 
-                    <div class="tab-pane fade <?php if ($current_tab == 'watchlist') echo 'show active'; ?>" 
-                          id="watchlist" role="tabpanel">
-                      <h5 class="card-title">My Watchlist</h5>
-                      <p class="card-text"> Here you can view your watchlist.</p>
-                      <?php include "watchlist.php";?>
-                    </div>
-                </div> <!-- end buyer tab content -->
-            </div> <!-- end card body -->
-        <?php endif; ?> <!-- end buyer dashboard section -->
+        <?php endif; ?>
 
-        <!-- ======================================================================== -->
-        <!--                         SELLER DASHBOARD CONTENT                         -->
-        <!-- ======================================================================== -->
         <?php if ($current_section == 'seller'): ?>
-            <div class = "card">
+            <div class="card">
                 <div class="card-header">
-                <!--- Horizontal sub tabs for seller dashboard --->
-                <ul class= "nav nav-tabs card-header-tabs" id="seller-dashboard-tabs" role="tablist">
+                <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'listings') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=listings">My Listings</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=seller&tab=listings">My Listings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
-                        href="my_profile.php?section=seller&tab=completed">Completed Auctions</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=seller&tab=completed">Completed Auctions</a>
                     </li>
                 </ul>
+                </div>
+                <div class="card-body">
+                    <?php 
+                        if (file_exists($tab_path)) { include $tab_path; } 
+                        else { echo "<div class='alert alert-danger'>Error: File '$real_filename' not found.</div>"; }
+                    ?>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="tab-content" id="seller-tab-content">
-                    
-                    <!-- My Listings Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'listings') echo 'show active'; ?>" 
-                          id="listings" role="tabpanel">
-                      <h5 class="card-title">My Listings</h5>
-                      <p class="card-text"> Here you can view all of your listings.</p>
-                      <?php include "mylistings.php";?>
-                    </div>
-                    <!-- Completed Auctions tab content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'completed') echo 'show active'; ?>" 
-                          id="completed" role="tabpanel">
-                      <h5 class="card-title">Completed Auctions</h5>
-                      <p class="card-text"> Here you can view all of your completed auctions.</p>
-                      <?php include "completed_auctions.php";?>
-                    </div>
-                </div> <!-- end seller tab content -->
-            </div> <!-- end card body -->
-        <?php endif; ?> <!-- end seller dashboard section -->
-        <!-- ======================================================================== -->
-        <!--                         ACCOUNT DASHBOARD CONTENT                         -->
-        <!-- ======================================================================== -->
+        <?php endif; ?>
+
         <?php if ($current_section == 'account'): ?>
-            <div class = "card">
+            <div class="card">
                 <div class="card-header">
-                <!--- Horizontal sub tabs for seller dashboard --->
-                <ul class= "nav nav-tabs card-header-tabs" id="account-dashboard-tabs" role="tablist">
+                <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'details') echo 'active'; ?>" 
-                        href="my_profile.php?section=account&tab=details">Account Details</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=account&tab=details">Account Details</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'password') echo 'active'; ?>" 
-                        href="my_profile.php?section=account&tab=password">Password Details</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=account&tab=password">Password Details</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'address') echo 'active'; ?>" 
-                        href="my_profile.php?section=account&tab=address">Address Info</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=account&tab=address">Address Info</a>
                     </li>
                 </ul>
+                </div>
+                <div class="card-body">
+                    <?php 
+                        if (file_exists($tab_path)) { include $tab_path; } 
+                        else { echo "<div class='alert alert-danger'>Error: File '$real_filename' not found.</div>"; }
+                    ?>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="tab-content" id="account-tab-content">
-                    <!-- Account details Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'details') echo 'show active'; ?>" 
-                          id="details" role="tabpanel">
-                      <h5 class="card-title">Account Details</h5>
-                      <p class="card-text"> Here you can view/change your account details.</p>
-                      <?php include "account_details.php";?>
-                    </div>
-                    <!-- Password Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'password') echo 'show active'; ?>" 
-                          id="password" role="tabpanel">
-                      <h5 class="card-title">Password Info</h5>
-                      <p class="card-text"> Here you can change your password details.</p>
-                      <?php include "password_details.php";?>
-                    </div>
-                    <!-- Account details Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'address') echo 'show active'; ?>" 
-                          id="address" role="tabpanel">
-                      <h5 class="card-title">Address Info</h5>
-                      <p class="card-text"> Here you can view/change your address information.</p>
-                      <?php include "address_details.php";?>
-                    </div>
-                </div> <!-- end account tab content -->
-            </div> <!-- end card body -->
-        <?php endif; ?> <!-- end account dashboard section -->
-        <!-- ======================================================================== -->
-        <!--                         MESSAGES DASHBOARD CONTENT                         -->
-        <!-- ======================================================================== -->
+        <?php endif; ?>
+
         <?php if ($current_section == 'messages'): ?>
-            <div class = "card">
+            <div class="card">
                 <div class="card-header">
-                <!--- Horizontal sub tabs for seller dashboard --->
-                <ul class= "nav nav-tabs card-header-tabs" id="messages-dashboard-tabs" role="tablist">
+                <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link <?php if ($current_tab == 'inbox') echo 'active'; ?>" 
-                        href="my_profile.php?section=messages&tab=inbox">My Inbox</a>
+                           href="<?php echo BASE_URL; ?>/my_profile.php?section=messages&tab=inbox">My Inbox</a>
                     </li>
                 </ul>
+                </div>
+                <div class="card-body">
+                    <?php 
+                        if (file_exists($tab_path)) { include $tab_path; } 
+                        else { echo "<div class='alert alert-danger'>Error: File '$real_filename' not found.</div>"; }
+                    ?>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="tab-content" id="account-tab-content">
-                    <!-- Account details Tab Content -->
-                    <div class="tab-pane fade <?php if ($current_tab == 'inbox') echo 'show active'; ?>" 
-                          id="inbox" role="tabpanel">
-                      <h5 class="card-title">My Inbox</h5>
-                      <p class="card-text"> Here you can view/send messages.</p>
-                      <?php include "inbox.php";?>
-                    </div>
-                </div> <!-- end message tab content -->
-            </div> <!-- end card body -->
-        <?php endif; ?> <!-- end messages dashboard section -->
-
-
-
+        <?php endif; ?>
 
         </div>
     </div>
 </div>
-            
 
-
-
-
-
-
+<?php include_once "includes/footer.php"; ?>

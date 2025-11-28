@@ -1,7 +1,5 @@
-<?php include_once("header.php");
-//TODO: Validate user input client AND server side.
-//client side (this page) can give hints to user 
-//eg passsword certain number of chars
+<?php 
+include_once "includes/header.php";
 
 // Recover inputs if the user messed up (so they don't have to retype everything)
 $email_val = $_SESSION['form_data']['email'] ?? '';
@@ -29,7 +27,8 @@ unset($_SESSION['form_data']);
         unset($_SESSION['reg_type']);
     }
 ?>
-<form method="POST" action="process_registration.php">
+
+<form method="POST" action="<?php echo BASE_URL; ?>/actions/process_registration.php">
         
         <div class="form-group row">
             <label for="email" class="col-sm-2 col-form-label text-right">Email</label>
@@ -85,25 +84,4 @@ unset($_SESSION['form_data']);
             </div>
         </div>
 
-        <div class="form-group row">
-            <label for="phoneNumber" class="col-sm-2 col-form-label text-right">Phone Number</label>
-            <div class="col-sm-10">
-                <input name="phoneNumber" type="text" class="form-control" id="phoneNumber" 
-                       placeholder="Phone Number" value="<?php echo htmlspecialchars($phone_val); ?>">
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <div class="col-sm-2"></div>
-            <div class="col-sm-10">
-                <button type="submit" class="btn btn-primary form-control">Register</button>
-            </div>
-        </div>
-    </form>
-    <div class="text-center">Already have an account? <a href="" data-toggle="modal" data-target="#loginModal">Login</a></div>
-</div>
-
-<?php include_once("footer.php")?>
-
-
-
+        <div class="form-

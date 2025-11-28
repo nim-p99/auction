@@ -1,53 +1,34 @@
-<?php include_once("header.php")?>
-<?php require("utilities.php")?>
+<?php 
+include_once "includes/header.php";
+require_once "includes/utilities.php";
 
-<?php
-// Ensure user is logged in
+// 1. Ensure user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header("Location: login.php");
+    header("Location: " . BASE_URL . "/login.php");
     exit();
 }
-// Ensure user is a seller 
-if ($_SESSION['account_type'] == 'buyer'){
-  echo "You do not have a seller account. Create an auction to become a seller";
-  # echo "<meta http-equiv='refresh' content='2;url=browse.php'>";
-  echo "<p>To go back, <a href='browse.php'>click here</a></p>";
-  #header("Location: browse.php");
-  #exit();
-}
 
-// Define valid tabs for the seller dashboard
+// 2. Define Tabs
+// Keys are the filename (without .php), Values are the Heading
 $tabs = [
-  'mybids.php' => 'My Bids',
-  'mylistings.php' => 'My Listings'
+  'mylistings' => 'My Listings',
+  'mybids' => 'My Bids'
 ];
 
-// Get the tab from URL or default to 'mylistings'
-$current_tab = $_GET['tab'] ?? 'mylistings.php';
+// Get current tab or default
+$current_tab = $_GET['tab'] ?? 'mylistings';
 
-// If invalid, fall back to default
 if (!array_key_exists($current_tab, $tabs)) {
-    $current_tab = 'mylistings.php';
+    $current_tab = 'mylistings';
 }
 
 $tab_heading = $tabs[$current_tab];
+$tab_path = 'partials/' . $current_tab . '.php';
 ?>
 
 <div class="container mt-4 mb-4">
-  <!-- Tab heading -->
-  <h2 class="mb-3"><?php echo htmlspecialchars($tab_heading); ?></h2>
-  <!-- Load tab content -->
-  <div class="tab-content p-3 border rounded bg-light">
-    <?php
-      // Build the path safely
-      if (file_exists($current_tab) && $_SESSION['account_type'] != 'buyer') {
-        include $current_tab;
-      } else {
-        echo "<p>Sorry, that tab could not be loaded.</p>";
-      }
-    ?>
-  </div>
-</div>
 
-<?php include_once "footer.php"; ?>
-
+  <?php if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'buyer'): ?>
+      
+      <div class="alert alert-warning shadow-sm">
+          <h4 class="alert-heading">
