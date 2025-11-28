@@ -131,7 +131,7 @@ CREATE TABLE transaction (
   transaction_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   bid_id INT UNSIGNED NOT NULL,
   seller_rating DECIMAL(3,2) NULL,
-  seller_comments TEXT NOT NULL,
+  seller_comments TEXT NULL,
   buyer_rating DECIMAL(3,2) NULL,
   buyer_comments TEXT NULL,
   FOREIGN KEY (bid_id) REFERENCES bids(bid_id)
