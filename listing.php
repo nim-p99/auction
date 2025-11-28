@@ -37,8 +37,8 @@
   }
   $query->close();
 
-  # can fine tune this query - dont need all rows from auction 
-  $auction_sql = "SELECT a.*, i.title, i.description 
+    # can fine tune this query - dont need all rows from auction
+  $auction_sql = "SELECT a.*, i.title, i.description, i.photo_url
         FROM auction a
         JOIN item i ON a.item_id = i.item_id
         WHERE a.auction_id = ?";
@@ -46,6 +46,21 @@
   $query->bind_param("i", $auction_id);
   $query->execute();
   $auction = $query->get_result()->fetch_assoc();
+
+  // Prepare photo URLs (supports JSON array or single string)
+  $photo_urls = [];
+  if (!empty($auction['photo_url'])) {
+    $decoded = json_decode($auction['photo_url'], true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+      // New format: JSON array of URLs
+      $photo_urls = $decoded;
+    } else {
+      // Old format: single URL string
+      $photo_urls = [$auction['photo_url']];
+    }
+  }
+
+
 
     // calculates / converts time
   $get_end_time = $auction["end_date_time"];
@@ -230,13 +245,30 @@
 
 <div class="container">
 
-<div class="row"> <!-- Row #1 with auction title + watch button -->
+<div class="row"> <!-- Row #1 with auction title + images + watch button -->
   <div class="col-sm-8"> <!-- Left col -->
-    <h2 class="my-3"><?php echo($auction['title']); ?></h2>
+    <h2 class="my-3">
+      <?php echo htmlspecialchars($auction['title']); ?>
+    </h2>
+
+    <p class="my-3">
+      <?php echo nl2br(htmlspecialchars($auction['description'])); ?>
+    </p>
+
+    <?php if (!empty($photo_urls)): ?>
+      <div class="d-flex flex-wrap mt-3">
+        <?php foreach ($photo_urls as $url): ?>
+          <img
+            src="<?php echo htmlspecialchars($url); ?>"
+            alt="Photo of <?php echo htmlspecialchars($auction['title']); ?>"
+            class="img-thumbnail mr-2 mb-2"
+            style="max-width: 150px; max-height: 150px;"
+          >
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
   </div>
-  <div class="col-sm-8"> 
-    <p class="my-3"><?php echo($auction['description']); ?></p>
-  </div>
+
   <div class="col-sm-4 align-self-center"> <!-- Right col -->
 <?php
   echo('<a href="seller_profile.php?seller_id=' . $seller_id . '">Seller Profile</a>');
