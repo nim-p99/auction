@@ -4,48 +4,55 @@
 
 <?php
 
-// This function takes the form data and adds the new auction to the database.
-
-/* TODO #1: Connect to MySQL database (perhaps by requiring a file that
-            already does this). */
-
-
-/* TODO #2: Extract form data into variables. Because the form was a 'post'
-            form, its data can be accessed via $POST['auctionTitle'], 
-            $POST['auctionDetails'], etc. Perform checking on the data to
-            make sure it can be inserted into the database. If there is an
-            issue, give some semi-helpful feedback to user. */
-
-
-/* TODO #3: If everything looks good, make the appropriate call to insert
-            data into the database. */
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  header('Location: create_auction.php');
+  exit();
+}
 
 $errors = [];
 
+// Helper to safely read POST values
 function post_val($key) {
   return isset($_POST[$key]) ? trim($_POST[$key]) : '';
 }
 
+// ----- Grab POST values -----
 $title        = post_val('auctionTitle');
 $details      = post_val('auctionDetails');
 $category_raw = post_val('auctionCategory');
-$start_price  = post_val('auctionStartPrice');
-$reserve_raw  = post_val('auctionReservePrice');
-$end_datetime = post_val('auctionEndDate');
 
-if ($title === '') $errors[] = "Title is required.";
-if ($details === '') $errors[] = "Details are required.";
+$start_price_raw = post_val('auctionStartPrice');
+$reserve_raw     = post_val('auctionReservePrice');
+$buy_now_raw     = post_val('auctionBuyNowPrice');
 
-if ($category_raw === '' || $category_raw === 'Choose...') {
-  $errors[] = "Category is required.";
+$start_raw = post_val('auctionStartDate');
+$end_raw   = post_val('auctionEndDate');
+
+$condition_raw = post_val('auctionCondition');
+
+// ----- Basic validation -----
+if ($title === '') {
+  $errors[] = "Title is required.";
+}
+if ($details === '') {
+  $errors[] = "Details are required.";
 }
 
-if ($start_price === '') {
+$category_id = null;
+if ($category_raw === '' || $category_raw === 'Choose.' || $category_raw === 'Choose...') {
+  $errors[] = "Category is required.";
+} else {
+  $category_id = (int)$category_raw;
+}
+
+// ----- Prices -----
+$start_price = null;
+if ($start_price_raw === '') {
   $errors[] = "Starting price is required.";
-} elseif (!is_numeric($start_price) || $start_price <= 0) {
+} elseif (!is_numeric($start_price_raw) || $start_price_raw <= 0) {
   $errors[] = "Starting price must be a positive number.";
 } else {
-  $start_price = (float)$start_price;
+  $start_price = (float)$start_price_raw;
 }
 
 $reserve_price = null;
@@ -57,34 +64,154 @@ if ($reserve_raw !== '') {
   }
 }
 
-if ($end_datetime === '') {
-  $errors[] = "End date/time is required.";
-} else {
-  $end_datetime = str_replace('T', ' ', $end_datetime) . ':00';
+$buy_now_price = null;
+if ($buy_now_raw !== '') {
+  if (!is_numeric($buy_now_raw)) {
+    $errors[] = "Buy now price must be a number.";
+  } else {
+    $buy_now_price = (float)$buy_now_raw;
+
+    if ($buy_now_price < 0) {
+      $errors[] = "Buy now price cannot be negative.";
+    }
+    if ($start_price !== null && $buy_now_price < $start_price) {
+      $errors[] = "Buy now price must be at least the starting price.";
+    }
+    if ($reserve_price !== null && $buy_now_price < $reserve_price) {
+      $errors[] = "Buy now price must be at least the reserve price.";
+    }
+  }
 }
 
+// ----- Dates (start + end, at least 1 hour apart) -----
+$start_datetime = null;
+$end_datetime   = null;
 
-// Use the real category ID chosen by the user
-$category_id = (int)$category_raw;
+if ($start_raw === '') {
+  $errors[] = "Start date/time is required.";
+} else {
+  $dt = DateTime::createFromFormat('Y-m-d\TH:i', $start_raw);
+  if (!$dt) {
+    $errors[] = "Start date/time is invalid.";
+  } else {
+    $start_datetime = $dt;
+  }
+}
 
-$start_datetime = date('Y-m-d H:i:s');
+if ($end_raw === '') {
+  $errors[] = "End date/time is required.";
+} else {
+  $dt = DateTime::createFromFormat('Y-m-d\TH:i', $end_raw);
+  if (!$dt) {
+    $errors[] = "End date/time is invalid.";
+  } else {
+    $end_datetime = $dt;
+  }
+}
 
+if ($start_datetime && $end_datetime) {
+  if ($end_datetime <= $start_datetime) {
+    $errors[] = "End date/time must be after the start date/time.";
+  } else {
+    $min_end = clone $start_datetime;
+    $min_end->modify('+1 hour');
+    if ($end_datetime < $min_end) {
+      $errors[] = "Auction must be live for at least one hour.";
+    }
+  }
+}
+
+// ----- Item condition -----
+$item_condition = 'Unknown';
+if ($condition_raw !== '') {
+  $item_condition = $condition_raw;
+}
+
+// ----- Photo upload (up to 5 images, stored on disk) -----
+$photo_urls = [];
+$photo_url  = null; // JSON string to store in DB, or null
+
+if (count($errors) === 0 && isset($_FILES['auctionPhotos']) && is_array($_FILES['auctionPhotos']['name'])) {
+
+  $names       = $_FILES['auctionPhotos']['name'];
+  $tmp_names   = $_FILES['auctionPhotos']['tmp_name'];
+  $error_codes = $_FILES['auctionPhotos']['error'];
+  $sizes       = $_FILES['auctionPhotos']['size'];
+
+  $max_size     = 5 * 1024 * 1024; // 5MB
+  $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+  $valid_indices = [];
+
+  for ($i = 0; $i < count($names); $i++) {
+    if ($error_codes[$i] === UPLOAD_ERR_NO_FILE) {
+      continue;
+    }
+
+    if ($error_codes[$i] !== UPLOAD_ERR_OK) {
+      $errors[] = "There was an error uploading one of your photos.";
+      continue;
+    }
+
+    if ($sizes[$i] > $max_size) {
+      $errors[] = "Photos must be smaller than 5MB.";
+      continue;
+    }
+
+    $ext = strtolower(pathinfo($names[$i], PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowed_exts, true)) {
+      $errors[] = "Only JPG, PNG, GIF and WEBP images are allowed.";
+      continue;
+    }
+
+    $valid_indices[] = $i;
+  }
+
+  if (!empty($valid_indices) && count($errors) === 0) {
+    // Only keep first 5
+    $valid_indices = array_slice($valid_indices, 0, 5);
+
+    $upload_dir_fs  = __DIR__ . '/uploads/';
+    $upload_dir_url = 'uploads/';
+
+    if (!is_dir($upload_dir_fs)) {
+      mkdir($upload_dir_fs, 0755, true);
+    }
+
+    foreach ($valid_indices as $idx) {
+      $ext      = strtolower(pathinfo($names[$idx], PATHINFO_EXTENSION));
+      $basename = bin2hex(random_bytes(16));
+      $filename = $basename . '.' . $ext;
+
+      $target_fs  = $upload_dir_fs . $filename;
+      $source_tmp = $tmp_names[$idx];
+
+      if (!move_uploaded_file($source_tmp, $target_fs)) {
+        $errors[] = "Failed to save one of your uploaded photos. Please try again.";
+        break;
+      } else {
+        $photo_urls[] = $upload_dir_url . $filename; // relative path
+      }
+    }
+
+    if (!empty($photo_urls) && count($errors) === 0) {
+      $photo_url = json_encode($photo_urls);
+    }
+  }
+}
+
+// ----- If anything failed, show errors and stop -----
 if (count($errors) > 0) {
   echo '<div class="alert alert-danger"><h4 class="alert-heading">There were problems with your submission:</h4><ul>';
-  foreach ($errors as $err) echo '<li>' . htmlspecialchars($err) . '</li>';
+  foreach ($errors as $err) {
+    echo '<li>' . htmlspecialchars($err) . '</li>';
+  }
   echo '</ul><hr><p>Please go back and correct these fields.</p></div>';
   mysqli_close($connection);
-
 } else {
-  // 9. Insert user into buyer table 
-  /* $query = $connection->prepare("INSERT INTO buyer (user_id) VALUES (?)"); */
-  /* $query->bind_param("i", $newUserID); */
-  /* if (!$query->execute()) { */
-  /*   die("Error creating buyer record: " . $query->error); */
-  /* } */
-  /* $query->close();  */
 
-  if ($_SESSION['seller_id'] == null) {
+  // ----- Ensure seller record exists -----
+  if (empty($_SESSION['seller_id'])) {
     $query = $connection->prepare("INSERT INTO seller (user_id) VALUES (?)");
     $query->bind_param("i", $_SESSION['user_id']);
     if (!$query->execute()) {
@@ -92,39 +219,46 @@ if (count($errors) > 0) {
     }
     $query->close();
 
-    $query = $connection->prepare("SELECT seller_id FROM seller WHERE user_id = (?)");
+    $query = $connection->prepare("SELECT seller_id FROM seller WHERE user_id = ?");
     $query->bind_param("i", $_SESSION['user_id']);
     $query->execute();
     $query->bind_result($seller_id);
     $query->fetch();
     $query->close();
 
-    $_SESSION['seller_id'] = $seller_id; 
+    $_SESSION['seller_id'] = $seller_id;
   } else {
     $seller_id = $_SESSION['seller_id'];
   }
 
-  $item_condition = 'Unknown';
-
+  // ----- Insert into item (includes photo_url JSON) -----
   $stmt_item = $connection->prepare(
-    "INSERT INTO item (category_id, title, description, item_condition)
-     VALUES (?, ?, ?, ?)"
+    "INSERT INTO item (category_id, title, description, photo_url, item_condition)
+     VALUES (?, ?, ?, ?, ?)"
   );
-
-  $stmt_item->bind_param('isss', $category_id, $title, $details, $item_condition);
+  $stmt_item->bind_param(
+    'issss',
+    $category_id,
+    $title,
+    $details,
+    $photo_url,
+    $item_condition
+  );
   $stmt_item->execute();
   $item_id = $connection->insert_id;
   $stmt_item->close();
 
-  $buy_now_price = null;
-  
+  // ----- Insert into auction -----
+  $start_str = $start_datetime->format('Y-m-d H:i:s');
+  $end_str   = $end_datetime->format('Y-m-d H:i:s');
+
   $stmt_auction = $connection->prepare(
     "INSERT INTO auction (
        seller_id, item_id, start_bid, reserve_price, buy_now_price,
-       start_date_time, end_date_time)
-       VALUES (?, ?, ?, ?, ?, ?, ?)"
+       start_date_time, end_date_time
+     )
+     VALUES (?, ?, ?, ?, ?, ?, ?)"
   );
-
   $stmt_auction->bind_param(
     'iidddss',
     $seller_id,
@@ -132,16 +266,16 @@ if (count($errors) > 0) {
     $start_price,
     $reserve_price,
     $buy_now_price,
-    $start_datetime,
-    $end_datetime
+    $start_str,
+    $end_str
   );
-
   $stmt_auction->execute();
   $auction_id = $connection->insert_id;
   $stmt_auction->close();
+
   mysqli_close($connection);
 
-  //$view_url = 'view_auction.php?auction_id=' . urlencode($auction_id);
+  // Success message + link to listing
   $listing_url = 'listing.php?item_id=' . urlencode($item_id);
   echo '<div class="text-center">';
   echo 'Auction successfully created! ';
@@ -149,17 +283,8 @@ if (count($errors) > 0) {
   echo '</div>';
 }
 
-
-
-
-
-// If all is successful, let user know.
-//echo('<div class="text-center">Auction successfully created! <a href="FIXME">View your new listing.</a></div>');
-
-
 ?>
 
 </div>
-
 
 <?php include_once("footer.php")?>
