@@ -92,6 +92,10 @@ $seller_id = $_SESSION['seller_id'];
                         <a class="nav-link <?php if ($current_tab == 'watchlist') echo 'active'; ?>" 
                            href="my_profile.php?section=buyer&tab=watchlist">Watchlist</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'reviews') echo 'active'; ?>" 
+                        href="my_profile.php?section=buyer&tab=reviews">Buyer Reviews</a>
+                    </li>
                 </ul>
             </div>
             <div class="card-body">
@@ -125,6 +129,11 @@ $seller_id = $_SESSION['seller_id'];
                       <p class="card-text"> Here you can view your watchlist.</p>
                       <?php include "watchlist.php";?>
                     </div>
+                    <!-- reviews tab content -->
+                     <div class="tab-pane fade <?php if ($current_tab == 'reviews') echo 'show active'; ?>" 
+                          id="reviews" role="tabpanel">
+                      <?php include "buyer_reviews.php";?>
+                    </div>
                 </div> <!-- end buyer tab content -->
             </div> <!-- end card body -->
         <?php endif; ?> <!-- end buyer dashboard section -->
@@ -145,6 +154,10 @@ $seller_id = $_SESSION['seller_id'];
                         <a class="nav-link <?php if ($current_tab == 'completed') echo 'active'; ?>" 
                         href="my_profile.php?section=seller&tab=completed">Past Listings</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php if ($current_tab == 'reviews') echo 'active'; ?>" 
+                        href="my_profile.php?section=seller&tab=reviews">Seller Reviews</a>
+                    </li>
                 </ul>
             </div>
             <div class="card-body">
@@ -163,6 +176,11 @@ $seller_id = $_SESSION['seller_id'];
                       <h5 class="card-title">Past Listings</h5>
                       <p class="card-text"> Here you can view all of your past listings.</p>
                       <?php include "completed_auctions.php";?>
+                    </div>
+                    <!-- Reviews-->
+                     <div class="tab-pane fade <?php if ($current_tab == 'reviews') echo 'show active'; ?>" 
+                          id="completed" role="tabpanel">
+                      <?php include "seller_reviews.php";?>
                     </div>
                 </div> <!-- end seller tab content -->
             </div> <!-- end card body -->

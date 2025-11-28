@@ -325,7 +325,7 @@
     <?php
       // gets bid history for this auction
       $bid_history_sql = "
-        SELECT b.amount, b.date, u.username
+        SELECT b.amount, b.date, u.username, b.buyer_id
         FROM bids AS b
         JOIN buyer AS buyer_t ON b.buyer_id = buyer_t.buyer_id
         JOIN users AS u ON buyer_t.user_id = u.user_id

@@ -30,7 +30,7 @@ else {
 $tabs = [
     'listings' => 'mylistings.php',
     'completed' => 'completed_auctions.php',
-    'reviews'  => 'reviews.php',
+    'reviews'  => 'seller_reviews.php',
     'message'  => 'messages.php'
 ];
 

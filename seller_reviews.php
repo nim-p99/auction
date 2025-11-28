@@ -4,17 +4,23 @@
 
 
 <?php
-
-if (isset($_GET['seller_id'])) {
-  $id = $_GET['seller_id'];
-  $review_type = 'Seller';
+//if $seller_id is already set by my_profile, use it
+//if not check the url
+//if neither then get the session 
+if (!isset($seller_id)) {
+  if (isset($_GET['seller_id'])) {
+    $seller_id = $_GET['seller_id'];
+  }elseif (isset($_SESSION['seller_id'])){
+    $seller_id = $_SESSION['seller_id'];
+  }
 }
-elseif (isset($_GET['buyer_id'])) {
+
+
+$review_type = 'Seller';
+if (isset($_GET['buyer_id'])) {
   $id = $_GET['buyer_id'];
   $review_type = 'Buyer';
 }
-
-$seller_id = $_GET['seller_id'] ?? null;
 
 if (!$seller_id) {
     die("No seller specified.");
@@ -36,7 +42,7 @@ else {
 }
 
 
-  echo ('<h2 class="my-3">' . $seller_username . " 's " . $review_type . ' reviews</h2>');
+  echo ('<h2 class="my-3">'.  $review_type . ' reviews</h2>');
   echo('<p class="text-muted">' . 'Average Rating: ' . $seller_avg_rating . '</p>' );
   
 
@@ -78,11 +84,11 @@ if (isset($_SESSION['seller_id'])): ?>
                         <?php echo $row['title'];?>
                     </a>
                     <br>
-                    <small class="text-muted"><?php echo $row['buyer_name'];?></small>
+                    <small class="text-muted">Buyer: <?php echo $row['buyer_name'];?></small>
                 </td>
                     
                 <td class="align-middle">
-                    <?php echo$row['rating'];?>
+                    <?php echo$row['rating'] . " / 5";?>
                         
                 </td>
 

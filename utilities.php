@@ -422,10 +422,11 @@ function list_bid_history($result) {
         $username = htmlspecialchars($row['username']);
         $amount = number_format($row['amount'], 2);
         $date = htmlspecialchars($row['date']);
+        $buyer_id = htmlspecialchars($row['buyer_id']);
 
         echo "
             <tr>
-                <td>{$username}</td>
+                <td><a href='buyer_profile.php?buyer_id={$buyer_id}'>{$username}</a></td>
                 <td>£{$amount}</td>
                 <td>{$date}</td>
             </tr>";

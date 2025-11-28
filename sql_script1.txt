@@ -420,16 +420,16 @@ INSERT INTO messages (thread_id, sender_id, message_body, created_at) VALUES
 
 -- Transactions (transaction_id 1..11) referencing valid bid_id values inserted above
 INSERT INTO transaction (transaction_id, bid_id, seller_rating, seller_comments, buyer_rating, buyer_comments) VALUES
-(1, 1005, 4.50, 'Excellent communication - fast payment.', NULL, NULL),
-(2, 1006, 4.25, 'Paid promptly; item as described.', 4.50, 'Great seller.'),
-(3, 1007, 4.00, 'Good comms; shipping delayed a day.', 4.00, 'Item arrived OK.'),
-(4, 1010, 4.75, 'Excellent packaging, quick dispatch.', 4.80, 'Very pleased.'),
-(5, 1015, 4.60, 'Nice buyer, easy to contact.', 4.50, 'Happy with purchase.'),
-(6, 1016, 4.90, 'Smooth transaction, thanks!', 4.85, 'Perfect.'),
-(7, 1020, 4.50, 'Good communication - fast payment.', NULL, NULL),
-(8, 1023, 4.10, 'Buyer asked for extra photos, polite.', 4.00, 'As expected.'),
-(9, 1024, 3.95, 'Minor confusion over postage but sorted.', 4.10, 'OK overall.'),
-(10,1025, 4.20, 'Item matched description.', 4.30, 'Would buy again.'),
-(11,1003, 4.00, 'Solid bidder; paid on time.', 4.10, 'Smooth.');
+(1, 1005, NULL, NULL, 4.50, 'Excellent communication - fast payment.'),
+(2, 1006, 4.50, 'Great seller.', 4.25, 'Paid promptly; item as described.'),
+(3, 1007, 4.00, 'Item arrived OK.', 4.00, 'Good comms; shipping delayed a day.'),
+(4, 1010, 4.80, 'Very pleased.',4.75, 'Excellent packaging, quick dispatch.'),
+(5, 1015, 4.50, 'Happy with purchase.', 4.60, 'Nice buyer, easy to contact.'),
+(6, 1016, 4.85, 'Perfect.', 4.90, 'Smooth transaction, thanks!'),
+(7, 1020, NULL, NULL, 4.50, 'Good communication - fast payment.'),
+(8, 1023, 4.00, 'As expected.', 4.10, 'Buyer asked for extra photos, polite.'),
+(9, 1024, 4.10, 'OK overall.', 3.95, 'Minor confusion over postage but sorted.'),
+(10,1025, 4.30, 'Would buy again.', 4.20, 'Item matched description.'),
+(11,1003, 4.10, 'Smooth.', 4.00, 'Solid bidder; paid on time.');
 
 -- done
