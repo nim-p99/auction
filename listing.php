@@ -429,6 +429,3 @@ function removeFromWatchlist(button) {
 
 } // End of addToWatchlist func
 </script>
-
-
-
