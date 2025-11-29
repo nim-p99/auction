@@ -87,7 +87,7 @@
   
   /* For the purposes of pagination, it would also be helpful to know the
      total number of results that satisfy the above query */
-  $num_results = 96; // TODO: Calculate me for real
+  $num_results = 0; // TODO: Calculate me for real once recently viewed is implemented
   $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
@@ -114,7 +114,7 @@
   // Copy any currently-set GET variables to the URL.
   $querystring = "";
   foreach ($_GET as $key => $value) {
-    if ($key != "page") {
+    if ($key != "page" && $key != "tab") {
       $querystring .= "$key=$value&amp;";
     }
   }
@@ -127,7 +127,7 @@
   if ($curr_page != 1) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+      <a class="page-link" href="my_profile.php?section=buyer&tab=viewed&' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
@@ -148,14 +148,14 @@
     
     // Do this in any case
     echo('
-      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+      <a class="page-link" href="my_profile.php?section=buyer&tab=viewed&' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
   
   if ($curr_page != $max_page) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+      <a class="page-link" href="my_profile.php?section=buyer&tab=viewed&' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>
