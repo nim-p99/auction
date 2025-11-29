@@ -86,7 +86,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
   
 
   $_SESSION['account_type'] = $role;
-  echo "You are logged in as: " . $_SESSION['account_type'];
+  //echo "You are logged in as: " . $_SESSION['account_type'];
 
 }
 
@@ -119,7 +119,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
   <!-- can use $pageTitle variable - which we set for each page -->
   <!-- $pageTitle = "Index" -->
   <!-- include header.php --> 
-  <title>[My Auction Site] <!--CHANGEME!--></title>
+  <title>Auction</title>
 </head>
 
 
@@ -136,6 +136,14 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
   // current status (session).
   if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) {
     echo '<div class="d-flex align-items-center">';
+
+    $badgeType = 'secondary'; // default grey
+    if ($_SESSION['account_type'] == 'admin') { $badgeType = 'danger'; } // Red
+    elseif ($_SESSION['account_type'] == 'seller') { $badgeType = 'success'; } // Green
+    elseif ($_SESSION['account_type'] == 'buyer') { $badgeType = 'info'; } // Blue
+
+    echo '<span class="badge badge-' . $badgeType . ' mr-2">' . ucfirst($_SESSION['account_type']) . '</span>';
+
     if ($_SESSION['user_id'] !== 1){
       echo '<a class="nav-link mr-3" href="my_profile.php">My Profile</a>';
     }
