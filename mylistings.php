@@ -283,11 +283,6 @@ else {
   }
 }
 ?>
-<script>
-  setInterval(function () {
-    window.location.reload();
-  }, 1000); // 60000 ms = 1 minute
-</script>
   </ul>
 </nav>
 

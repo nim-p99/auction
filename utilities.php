@@ -206,7 +206,7 @@ function filter_by_account($connection, $filter_cat,  $final_query) {
   if ($filter_cat == 'all')
     return $final_query;
   else if ($filter_cat == 'buyer'){
-    return $final_query .= " AND b.buyer_id IS NOT NULL"; 
+    return $final_query .= " AND b.buyer_id IS NOT NULL AND s.seller_id IS NULL"; 
   }
   else if ($filter_cat == 'seller') {
     return $final_query .=" AND s.seller_id IS NOT NULL";
