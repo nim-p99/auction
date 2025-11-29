@@ -205,6 +205,19 @@ else {
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
   $final_query .= " GROUP BY a.auction_id ";
   $final_query = sort_by($sort_by, $final_query);
+
+// get total count before
+  $count_result = mysqli_query($connection, $final_query);
+  $num_results = mysqli_num_rows($count_result);
+
+  // pagination LIMIT and OFFSET
+  // offset is subtracting 1 bec it needs to start at 0 to show 1-5
+  $results_per_page = 5;
+  $offset = ($curr_page - 1) * $results_per_page;
+  $final_query .= " LIMIT $results_per_page OFFSET $offset";
+
+
+
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings
@@ -213,11 +226,9 @@ else {
   } else {
     echo "<p>Your watchlist is empty.</p>";
   }
- 
+
   // For pagination & pagnation calculations
-  
-  $num_results = mysqli_num_rows($auctions_to_list); //96;
-  $results_per_page = 10;
+
   $max_page = ceil($num_results / $results_per_page);
 ?>
   </div>
@@ -231,7 +242,7 @@ else {
   // Copy any currently-set GET variables to the URL.
   $querystring = "";
   foreach ($_GET as $key => $value) {
-    if ($key != "page") {
+    if ($key != "page" && $key != "tab") {
       $querystring .= "$key=$value&amp;";
     }
   }
@@ -244,7 +255,7 @@ else {
   if ($curr_page != 1) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+        <a class="page-link" href="my_profile.php?section=buyer&tab=watchlist&' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
@@ -265,14 +276,14 @@ else {
     
     // Do this in any case
     echo('
-      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+    <a class="page-link" href="my_profile.php?section=buyer&tab=watchlist&' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
   
   if ($curr_page != $max_page) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="watchlist.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+        <a class="page-link" href="my_profile.php?section=buyer&tab=watchlist&' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>
