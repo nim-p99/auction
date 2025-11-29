@@ -23,7 +23,14 @@ if(!$user) {
   die("Invalid email or password...");
 }
 if($user['acc_active'] == 0){
-  die("Your Account is suspended, please contact support for assistance.");
+  //die("Your Account is suspended, please contact support for assistance.");
+  $_SESSION['user_id'] = $user['user_id'];
+  $_SESSION['logged_in'] = true;
+  $_SESSION['is_suspended'] = true;
+
+  header("Location: account_suspended.php");
+  exit();
+
 }
 // 4. verify password
 if (!password_verify($password, $user['password'])) {
