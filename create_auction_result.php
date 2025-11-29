@@ -227,6 +227,31 @@ if (count($errors) > 0) {
     $query->close();
 
     $_SESSION['seller_id'] = $seller_id;
+    //---- notification to buyer  that they have created a seller account
+    $email_query= $connection->prepare(
+      "SELECT u.username, u.email
+      FROM users AS u
+      WHERE u.user_id = ? 
+    ");
+    $email_query->bind_param("i", $_SESSION['user_id']);
+    $email_query->execute();
+    $email_query->bind_result($user_name, $user_email);
+    $email_query->fetch();
+    $email_query->close();
+
+    $message =
+    "
+    Dear $user_name,
+
+    You have successfully created a SELLER account. You can now view your active and completed listings, 
+    alongside their associated reviews in the 'Seller Dashboard' within 'My Proflile'. 
+    
+    From The Auction Site.
+    ";
+    $headers = "From: the auction_site";
+        $headers .= "Content-type: text/plain; charset=UTF-8";
+    mail($user_email, "Seller Account Created", $message, $headers);
+
   } else {
     $seller_id = $_SESSION['seller_id'];
   }
@@ -273,7 +298,7 @@ if (count($errors) > 0) {
   $auction_id = $connection->insert_id;
   $stmt_auction->close();
 
-  mysqli_close($connection);
+  
 
   // Success message + link to listing
   $listing_url = 'listing.php?item_id=' . urlencode($item_id);
@@ -281,7 +306,30 @@ if (count($errors) > 0) {
   echo 'Auction successfully created! ';
   echo '<a href="' . htmlspecialchars($listing_url) . '">View your new listing.</a>';
   echo '</div>';
-}
+
+  $email_q= $connection->prepare(
+      "SELECT u.username, u.email
+      FROM users AS u
+      WHERE u.user_id = ? 
+    ");
+    $email_q->bind_param("i", $_SESSION['user_id']);
+    $email_q->execute();
+    $email_q->bind_result($user_name, $user_email);
+    $email_q->fetch();
+    $email_q->close();
+     $message ="
+    To  $user_name,
+
+    You have successfully listed $title.
+    You will recieve updates on it's progress.
+    
+    From The Auction Site";
+    $headers = "From: the auction_site";
+        $headers .= "Content-type: text/plain; charset=UTF-8";
+    mail($user_email, "Listing Created", $message, $headers);
+    mysqli_close($connection);
+    
+  }
 
 ?>
 
