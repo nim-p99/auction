@@ -16,12 +16,16 @@ require("utilities.php");
 $filter_cat = $_GET['cat'] ?? 'all'; // default to 'all' categories
 $sort_by = $_GET['sort'] ?? 'hot'; //default to items that have lots of bids'
 $keyword = $_GET['keyword'] ?? '';
+$results_per_page = 10;
+
 if (!isset($_GET['page'])) {
     $curr_page = 1;
   }
 else {
     $curr_page = $_GET['page'];
-  }
+}
+
+$offset = ($curr_page - 1) * $results_per_page;
 ?>
 
 
@@ -134,9 +138,12 @@ else {
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
   $final_query .= " GROUP BY a.auction_id ";
   $final_query = sort_by($sort_by, $final_query);
-  $auctions_to_list = mysqli_query($connection, $final_query);
 
-  $num_results = mysqli_num_rows($auctions_to_list); //96;
+  $total_results_query = mysqli_query($connection, $final_query);
+  $num_results = mysqli_num_rows($total_results_query); 
+  $paged_query = $final_query . " LIMIT $offset, $results_per_page";
+  $auctions_to_list = mysqli_query($connection, $paged_query);
+
   
   // showing message if no results
   if ($num_results == 0 || $num_results == null)  {
@@ -153,7 +160,6 @@ else {
     list_table_items($auctions_to_list,$is_admin = true);
   }
 
-  $results_per_page = 10;
   $max_page = ceil($num_results / $results_per_page);
 ?>
   </div>
