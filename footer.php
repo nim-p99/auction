@@ -9,8 +9,8 @@
       </div>
       <div class="col-md-6 text-right">
         <ul class="list-inline">
-          <li class="list-inline-item"><a href="about.php">About Us</a></li>
-          <li class="list-inline-item">&middot;</li>
+          <!-- <li class="list-inline-item"><a href="about.php">About Us</a></li>
+          <li class="list-inline-item">&middot;</li> -->
           <li class="list-inline-item"><a href="contact_admin.php">Contact Admin</a></li>
         </ul>
       </div>
