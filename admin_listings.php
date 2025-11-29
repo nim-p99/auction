@@ -180,7 +180,7 @@ else {
   if ($curr_page != 1 && $num_results !=0) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="admin_accs.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
+      <a class="page-link" href="admin_listings.php?' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
         <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
         <span class="sr-only">Previous</span>
       </a>
@@ -201,14 +201,14 @@ else {
     
     // Do this in any case
     echo('
-      <a class="page-link" href="admin_accs.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
+      <a class="page-link" href="admin_listings.php?' . $querystring . 'page=' . $i . '">' . $i . '</a>
     </li>');
   }
   
   if ($curr_page != $max_page && $num_results !=0) {
     echo('
     <li class="page-item">
-      <a class="page-link" href="admin_accs.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
+      <a class="page-link" href="admin_listings.php?' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
         <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
         <span class="sr-only">Next</span>
       </a>
@@ -224,4 +224,4 @@ else {
 
 
 
-<?php include_once("footer.php")?>
+

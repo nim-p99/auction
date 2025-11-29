@@ -161,6 +161,9 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 	<li class="nav-item mx-1">
       <a class="nav-link" href="admin_listings.php">Manage Listings</a>
     </li>
+    <li class="nav-item mx-1">
+      <a class="nav-link" href="admin_messages.php">Messages</a>
+    </li>
     ');
   }
   else{
