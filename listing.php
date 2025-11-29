@@ -342,14 +342,14 @@
      <p class="lead">Starting bid: £<?php echo(number_format($auction['start_bid'], 2)) ?></p>
 <?php else: ?>
      <p>Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
-    <p class="lead">Current bid: £<?php echo(number_format($highest_bid, 2)) ?></p>
+    <p class="lead">Current bid: £<span id="current_price_display"><?php echo(number_format($highest_bid, 2)) ?></span></p>
 
     <?php
     // user logged in  
      if(isset($_SESSION['user_id']) && $_SESSION['user_id']!==1){ ?>
       <form method="POST" action="place_bid.php">
         <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
-        <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
+        <input type="hidden" name="highest_bid" id = "highest_bid_input" value="<?php echo $highest_bid; ?>">
         <input type="hidden" name="item_id" value="<?php echo $item_id; ?>">
         <div class="input-group">
           <div class="input-group-prepend">
@@ -483,7 +483,33 @@ function removeFromWatchlist(button) {
 </script>
 
 <script>
-  setInterval(function () {
-    window.location.reload();
-  }, 1000); // 60000 ms = 1 minute
+  //updating highest bid automatically
+  $(document).ready(function() {
+    var auctionId = <?php echo $auction_id; ?>;
+
+    setInterval(function(){
+      $.ajax({
+        url: 'get_latest_bid.php',
+        type: 'GET',
+        data: {auction_id: auctionId},
+        dataType: 'json',
+        success: function(data) {
+          if (data && data.amount){
+            var newHighestBid = parseFloat(data.amount);
+
+            var currentDisplayPrice = parseFloat($("#current_price_display").text().replace(/,/g, ''));
+
+            if (newHighestBid > currentDisplayPrice){
+              //update visible text
+              $('#current_price_display').text(newHighestBid.toFixed(2));
+              //update hidden input
+              $('#highest_bid_input').val(newHighestBid);
+              console.log("Price updated to: " + newHighestBid);
+          
+            }
+          }
+        },
+      });
+    }, 2000); // run every second
+  });
 </script>
