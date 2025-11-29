@@ -106,4 +106,3 @@ if (isset($_SESSION['seller_id'])): ?>
 
 
 
-<?php include_once("footer.php")?>

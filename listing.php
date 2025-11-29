@@ -295,15 +295,23 @@
   /* The following watchlist functionality uses JavaScript, but could
      just as easily use PHP as in other places in the code */
 
-  if ($now < $end_time && $_SESSION['user_id']!==1): ?>
-    <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
-      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
-    </div>
-    <div id="watch_watching" <?php if (!$has_session || !$watching) echo('style="display: none"');?> >
-      <button type="button" class="btn btn-success btn-sm" disabled>Watching</button>
-      <button type="button" class="btn btn-danger btn-sm" onclick="removeFromWatchlist()">Remove watch</button>
-    </div>
-<?php endif /* Print nothing otherwise */ ?>
+  if ($now < $end_time):
+    // user logged in and not admin 
+    if (isset($_SESSION['user_id']) && $_SESSION['user_id']!==1): ?>
+      <div id="watch_nowatch" <?php if ($has_session && $watching) echo('style="display: none"');?> >
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addToWatchlist()">+ Add to watchlist</button>
+      </div>
+      <div id="watch_watching" <?php if (!$has_session || !$watching) echo('style="display: none"');?> >
+        <button type="button" class="btn btn-success btn-sm" disabled>Watching</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeFromWatchlist()">Remove watch</button>
+      </div>
+    <?php //user not logged in 
+    elseif (!isset($_SESSION['user_id'])): ?>
+      <div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#loginModal">+ Add to watchlist</button>
+      </div>
+    <?php endif;?>
+<?php endif ?>
   </div>
 </div>
 
@@ -313,10 +321,17 @@
 
   <div class="col-sm-4"> <?php if (!is_null($auction["buy_now_price"]) && $now < $end_time && $now >= $start_time): ?>
       <p></p>
+
+      <?php if (isset($_SESSION['user_id'])): ?>
       <form method="POST" action="buy_now.php" onsubmit="return confirm('Are you sure you want to buy this item now for £<?php echo number_format($auction['buy_now_price'], 2); ?>?');">
         <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
         <button type="submit" class="btn-info btn-sm">Buy Now at: £<?php echo number_format($auction["buy_now_price"], 2); ?></button>
       </form>
+      <?php else: ?>
+        <button type="button" class="btn-info btn-sm" data-toggle="modal" data-target="#loginModal">Buy Now at: £<?php echo number_format($auction["buy_now_price"], 2); ?></button>
+      <?php endif; ?>
+
+
     <?php endif; ?>
    
     <?php if ($now > $end_time): ?>
@@ -329,7 +344,9 @@
      <p>Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
     <p class="lead">Current bid: £<?php echo(number_format($highest_bid, 2)) ?></p>
 
-    <?php if($_SESSION['user_id']!==1){ ?>
+    <?php
+    // user logged in  
+     if(isset($_SESSION['user_id']) && $_SESSION['user_id']!==1){ ?>
       <form method="POST" action="place_bid.php">
         <input type="hidden" name="auction_id" value="<?php echo $auction_id; ?>">
         <input type="hidden" name="highest_bid" value="<?php echo $highest_bid; ?>">
@@ -342,7 +359,17 @@
         </div>
         <button type="submit" class="btn btn-primary form-control">Place bid</button>
       </form>
-    <?php }?>
+    <?php // user not logged in 
+    } elseif (!isset($_SESSION['user_id'])) {?>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">£</span>
+          </div>
+        <input type="number" class="form-control" id="bid" name="bid" step="0.1" placeholder="Login to bid" disabled>
+        </div>
+        <button type="button" class="btn btn-primary form-control" data-toggle="modal" data-target="#loginModal">Login to Place Bid</button>
+    <?php } ?>
+    
 <?php endif ?>
 
   

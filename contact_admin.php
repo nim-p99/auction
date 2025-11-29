@@ -7,7 +7,7 @@
   <?php
   // check if user is logged in
   if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-      echo '<div class="alert alert-warning">You must be logged in to contact the administrator. <a href="browse.php">Go to Login</a></div>';
+      echo '<div class="alert alert-warning">You must be logged in to contact the administrator. <a href="login.php">Go to Login</a></div>';
   } else {
       
       // 2. Get the Admin's User ID

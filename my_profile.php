@@ -266,6 +266,8 @@ $seller_id = $_SESSION['seller_id'];
         </div>
     </div>
 </div>
+
+<?php include ("footer.php");?>
             
 
 

@@ -94,4 +94,3 @@ if (!$buyer_id){
 
 
 
-<?php include_once("footer.php")?>
