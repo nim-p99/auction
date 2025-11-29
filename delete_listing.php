@@ -70,7 +70,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['auction_id'])) {
             Unfortunately your listing: '{$auction_title}' was delisted by admin as it violates our terms of service.
             
             From: The Auction Site";
-            $headers="From: the auction_site";
+            $headers="From: the auction_site <comp0178test@gmail.com>\r\n";
+            $headers .= "Reply-To: comp0178test@gmail.com\r\n";
+            $headers .= "MIME-Versio: 1.0\r\n";
             $headers .= "Content-type: text/plain; charset=UTF-8";
             
             mail($seller_email, $subject, $message, $headers);
