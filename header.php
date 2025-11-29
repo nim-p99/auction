@@ -144,7 +144,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
     echo '<span class="badge badge-' . $badgeType . ' mr-2">' . ucfirst($_SESSION['account_type']) . '</span>';
 
-    if ($_SESSION['user_id'] !== 1){
+    if ($_SESSION['user_id'] !== 1 && (!isset($_SESSION['is_suspended']) || !$_SESSION['is_suspended'])){
       echo '<a class="nav-link mr-3" href="my_profile.php">My Profile</a>';
     }
     echo '<a class="nav-link" href="logout.php">Logout</a>'; 
@@ -161,7 +161,10 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <ul class="navbar-nav align-middle">
 <?php
-  if (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'admin') {
+  if (isset($_SESSION['is_suspended']) && $_SESSION['is_suspended'] === true) {
+
+  }
+  elseif (isset($_SESSION['account_type']) && $_SESSION['account_type'] == 'admin') {
   echo('
     <li class="nav-item mx-1">
         <a class="nav-link" href="admin_accs.php">Manage User Accounts</a>
