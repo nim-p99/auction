@@ -479,4 +479,11 @@ function removeFromWatchlist(button) {
   }); // End of AJAX call
 
 } // End of addToWatchlist func
+
+</script>
+
+<script>
+  setInterval(function () {
+    window.location.reload();
+  }, 1000); // 60000 ms = 1 minute
 </script>
