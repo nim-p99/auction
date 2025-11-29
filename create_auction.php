@@ -143,34 +143,6 @@
         </div>
 
         <div class="form-group row">
-          <label for="auctionItemOwnsership" class="col-sm-2 col-form-label text-right">Years of ownership</label>
-          <div class="col-sm-10">
-            <select class="form-control" id="auctionItemOwnsership" name="auctionItemOwnsership">
-              <option value="">I've owned this for...</option>
-              <option value="new">Less than 1 year</option>
-              <option value="like_new">1-2 years</option>
-              <option value="very_good">2-3 years</option>
-              <option value="good">3-4 years</option>
-              <option value="fair">4-5 years</option>
-              <option value="poor">More than 5 years</option>
-            </select>
-            <small id="conditionHelp" class="form-text text-muted"> Optional. How many years have you had this item for?</small>
-          </div>
-        </div>
-
-        <div class="form-group row">
-          <label for="auctionPreviousOwners" class="col-sm-2 col-form-label text-right">Previous owners</label>
-          <div class="col-sm-10">
-            <select class="form-control" id="aauctionPreviousOwners" name="auctionPreviousOwners">
-              <option value="">Choose...</option>
-              <option value="first_hand">No</option>
-              <option value="second_hand">Yes</option>
-            </select>
-            <small id="PreviousOwnersHelp" class="form-text text-muted"> Optional. Has this item had previous owners?</small>
-          </div>
-        </div>
-
-        <div class="form-group row">
           <label for="auctionDetails" class="col-sm-2 col-form-label text-right">Item details</label>
           <div class="col-sm-10">
             <textarea class="form-control" id="auctionDetails" name="auctionDetails" rows="4"></textarea>
@@ -193,7 +165,7 @@
         <div id="photoPreview" class="mt-3"></div>
 
         <!-- Explanation -->
-        <small class="form-text text-muted"><span class="text-danger">* Required.</span> Maximum 5 upload of 5 photos. Accepted image types: JPG, JPEG, PNG, GIF, WEBP.</small>
+        <small class="form-text text-muted">Maximum 5 upload of 5 photos. Accepted image types: JPG, JPEG, PNG, GIF, WEBP.</small>
         
         <!-- Inline error for invalid photo types -->
         <small id="photoError" class="text-danger" style="display:none;"></small>
@@ -239,7 +211,7 @@
               <div class="input-group-prepend">
                 <span class="input-group-text">£</span>
               </div>
-              <input type="number" class="form-control" id="auctionBuyNowPrice" name="auctionBuyNowPrice" step="0.01" min="0" required>
+              <input type="number" class="form-control" id="auctionBuyNowPrice" name="auctionBuyNowPrice" step="0.01" min="0">
             </div>
             <small id="buyNowHelp" class="form-text text-muted">
             Optional. While the auction is still active, a buyer can immeditaly purchase the item at the buy now price, causing the auction to subsequently end.
