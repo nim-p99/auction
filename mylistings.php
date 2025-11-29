@@ -253,7 +253,7 @@ else {
       </a>
     </li>');
   }
-    
+  if ($num_results>0){
   for ($i = $low_page; $i <= $high_page; $i++) {
     if ($i == $curr_page) {
       // Highlight the link
@@ -281,6 +281,7 @@ else {
       </a>
     </li>');
   }
+}
 ?>
 
   </ul>
