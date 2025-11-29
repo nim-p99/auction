@@ -17,7 +17,10 @@
     echo '<h2 class="my-3">' . $seller_username . "'s listings</h2>"; 
   }
 
-  
+  $is_owner = false;
+  if (isset($_SESSION['seller_id']) && $_SESSION['seller_id'] == $seller_id) {
+    $is_owner = true;
+  } 
    
    
   // TODO: Check user's credentials (cookie/session).
@@ -203,7 +206,7 @@ else {
     JOIN item AS i ON a.item_id = i.item_id
     JOIN category AS c ON c.category_id = i.category_id
     LEFT JOIN bids AS b ON b.auction_id = a.auction_id
-    WHERE a.seller_id = $seller_id AND a.end_date_time > NOW()
+    WHERE a.seller_id = $seller_id AND a.end_date_time > NOW() AND a.is_active = 1
     ";
   $final_query = filter_by_keyword($connection, $keyword, $final_query);
   $final_query = filter_by_category($connection, $filter_cat,  $final_query);
@@ -212,7 +215,7 @@ else {
   $auctions_to_list = mysqli_query($connection, $final_query);
 
   // Use the function from utilities.php to print the listings
-  list_table_items($auctions_to_list);
+  list_table_items($auctions_to_list, $is_owner);
 
   // For pagination & pagnation calculations
   
