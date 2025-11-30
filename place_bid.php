@@ -138,7 +138,8 @@ else{
         ";
 
         $headers = "From: the auction_site";
-        $headers .= "Content-type: text/plain; charset=UTF-8";
+        $headers .= "MIME-Version: 1.0\r\n";
+        $headers .= "Content-type: text/plain; charset=UTF-8\r\n";
         mail($outbid_email, $subject, $message, $headers);
 
     }

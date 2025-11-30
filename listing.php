@@ -376,6 +376,7 @@
   </div> </div> <div class="row mt-4">
   <div class="col-12">
     <h4>Bid History</h4>
+    <div id="history-container">
     <?php
       // gets bid history for this auction
       $bid_history_sql = "
@@ -397,6 +398,7 @@
 
       $bid_history_query->close();
     ?>
+    </div>
   </div>
 </div>
 
@@ -498,7 +500,8 @@ function removeFromWatchlist(button) {
             var newHighestBid = parseFloat(data.amount);
 
             var currentDisplayPrice = parseFloat($("#current_price_display").text().replace(/,/g, ''));
-
+            
+            //update if price changed
             if (newHighestBid > currentDisplayPrice){
               //update visible text
               $('#current_price_display').text(newHighestBid.toFixed(2));
@@ -507,6 +510,9 @@ function removeFromWatchlist(button) {
               console.log("Price updated to: " + newHighestBid);
           
             }
+          }
+          if (data && data.history) {
+             $("#history-container").html(data.history);
           }
         },
       });

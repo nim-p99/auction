@@ -47,7 +47,7 @@ else {
   
 
 
-if (isset($_SESSION['seller_id'])): ?>
+if ($seller_id): ?>
   
   <table class="table table-bordered table-striped">
       <thead class="thead-light">
