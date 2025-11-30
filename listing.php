@@ -38,7 +38,7 @@
   $query->close();
 
   # can fine tune this query - dont need all rows from auction 
-  $auction_sql = "SELECT a.*, i.title, i.description, i.photo_url 
+  $auction_sql = "SELECT a.*, i.title, i.description, i.photo_url, i.item_condition 
         FROM auction a
         JOIN item i ON a.item_id = i.item_id
         WHERE a.auction_id = ?";
@@ -274,6 +274,16 @@
 <div class="container">
 
 <div class="row"> <div class="col-sm-8"> <h2 class="my-3"><?php echo($auction['title']); ?></h2>
+  <?php if (!empty($auction['item_condition'])): ?>
+      <p class="text-muted mb-1">
+        <strong>Condition:</strong>
+        <?php
+          $raw_condition = $auction['item_condition'];
+          $pretty_condition = ucwords(str_replace('_', ' ', $raw_condition));
+          echo htmlspecialchars($pretty_condition);
+        ?>
+      </p>
+    <?php endif; ?>
   </div>
   <div class="col-sm-8"> 
     <p class="my-3"><?php echo($auction['description']); ?></p>
@@ -284,8 +294,7 @@
             src="<?php echo htmlspecialchars($url); ?>"
             alt="Photo of <?php echo htmlspecialchars($auction['title']); ?>"
             class="img-thumbnail mr-2 mb-2"
-            style="max-width: 150px; max-height: 150px;"
-          >
+            style="max-width: 150px; max-height: 150px;">
         <?php endforeach; ?>
       </div>
     <?php endif; ?>

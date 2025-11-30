@@ -139,7 +139,7 @@ if (count($errors) === 0 && isset($_FILES['auctionPhotos']) && is_array($_FILES[
   $sizes       = $_FILES['auctionPhotos']['size'];
 
   $max_size     = 5 * 1024 * 1024; // 5MB
-  $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  $allowed_exts = ['jpg', 'jpeg', 'png'];
 
   $valid_indices = [];
 
@@ -160,7 +160,7 @@ if (count($errors) === 0 && isset($_FILES['auctionPhotos']) && is_array($_FILES[
 
     $ext = strtolower(pathinfo($names[$i], PATHINFO_EXTENSION));
     if (!in_array($ext, $allowed_exts, true)) {
-      $errors[] = "Only JPG, PNG, GIF and WEBP images are allowed.";
+      $errors[] = "Only JPG, JPEG and PNG images are allowed.";
       continue;
     }
 

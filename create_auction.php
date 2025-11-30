@@ -165,7 +165,7 @@
         <div id="photoPreview" class="mt-3"></div>
 
         <!-- Explanation -->
-        <small class="form-text text-muted">Maximum 5 upload of 5 photos. Accepted image types: JPG, JPEG, PNG, GIF, WEBP.</small>
+        <small class="form-text text-muted">Maximum 5 upload of 5 photos. Accepted image types: JPG, JPEG and PNG.</small>
         
         <!-- Inline error for invalid photo types -->
         <small id="photoError" class="text-danger" style="display:none;"></small>
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let selectedPhotos = [];
   const MAX_PHOTOS = 5;
-  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  const allowedExtensions = ['jpg', 'jpeg', 'png'];
   const photoError = document.getElementById('photoError');
 
 
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!allowedExtensions.includes(ext)) {
         if (photoError) {
           photoError.textContent =
-            `File "${file.name}" is not a supported image type. Allowed: JPG, JPEG, PNG, GIF, WEBP.`;
+            `File "${file.name}" is not a supported image type. Allowed: JPG, JPEG and PNG.`;
           photoError.style.display = 'block';
         }
         continue; // skip this file
