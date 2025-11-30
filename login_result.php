@@ -13,7 +13,7 @@ if (empty($email) || empty($password)) {
 
 // 3. fetch user from database by their email
 // (prepared statements protect from SQL injection the best)
-$query = $connection->prepare("SELECT user_id, acc_active, password FROM users WHERE email = ?");
+$query = $connection->prepare("SELECT user_id, acc_active, password, username FROM users WHERE email = ?");
 $query->bind_param("s", $email);
 $query->execute();
 $result = $query->get_result();
@@ -28,6 +28,15 @@ if($user['acc_active'] == 0){
   $_SESSION['logged_in'] = true;
   $_SESSION['is_suspended'] = true;
 
+
+// Ensure any persistent login cookies are cleared
+  if (isset($_COOKIE['userID'])) {
+      setcookie('userID', '', time() -3600, "/");
+  }
+  if (isset($_COOKIE['username'])) {
+      setcookie('username', '', time() -3600, "/");
+  }
+
   header("Location: account_suspended.php");
   exit();
 
@@ -41,6 +50,11 @@ if (!password_verify($password, $user['password'])) {
 $_SESSION['user_id'] = $user['user_id'];
 $_SESSION['logged_in'] = true;
 
+// If user has consented, set optional login cookies (30 days)
+if (isset($_COOKIE['cookie_consent']) && $_COOKIE['cookie_consent'] === 'accept') {
+    setcookie('userID', $user['user_id'], time() + (60 * 60 * 24 * 30), "/");
+    setcookie('username', $user['username'], time() + (60 * 60 * 24 * 30), "/");
+}
 
 
 // 6. success message and redirect
