@@ -1,189 +1,135 @@
-<?php require_once ("utilities.php")?>
+<?php require_once("utilities.php")?>
 
 <div class="container">
 
-<div id="searchSpecs">
-<!-- When this form is submitted, this PHP page is what processes it.
-     Search/sort specs are passed to this page through parameters in the URL
-     (GET method of passing data to a page). -->
-<form method="get" action="watchlist.php">
-  <div class="row">
-    <div class="col-md-5 pr-0">
-      <div class="form-group">
-        <label for="keyword" class="sr-only">Search keyword:</label>
-	    <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text bg-transparent pr-0 text-muted">
-              <i class="fa fa-search"></i>
-            </span>
-          </div>
-          <input type="text" class="form-control border-left-0" id="keyword" placeholder="Search for anything">
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3 pr-0">
-      <div class="form-group">
-        <label for="cat" class="sr-only">Search within:</label>
-        <select class="form-control" id="cat">
-          <option selected value="all">All categories</option>
-          <option value="fill">Fill me in</option>
-          <option value="with">with options</option>
-          <option value="populated">populated from a database?</option>
-        </select>
-      </div>
-    </div>
-    <div class="col-md-3 pr-0">
-      <div class="form-inline">
-        <select class="form-control" id="order_by">
-          <option selected value="pricelow">Price (low to high)</option>
-          <option value="pricehigh">Price (high to low)</option>
-          <option value="date">Soonest expiry</option>
-        </select>
-      </div>
-    </div>
-    <div class="col-md-1 px-0">
-      <button type="submit" class="btn btn-primary">Search</button>
-    </div>
-  </div>
-</form>
-</div> <!-- end search specs bar -->
-
-
-</div>
-
-<?php
-  // Retrieve these from the URL
-  if (!isset($_GET['keyword'])) {
-    // TODO: Define behavior if a keyword has not been specified.
-  }
-  else {
-    $keyword = $_GET['keyword'];
-  }
-
-  if (!isset($_GET['cat'])) {
-    // TODO: Define behavior if a category has not been specified.
-  }
-  else {
-    $category = $_GET['cat'];
-  }
-  
-  if (!isset($_GET['order_by'])) {
-    // TODO: Define behavior if an order_by value has not been specified.
-  }
-  else {
-    $ordering = $_GET['order_by'];
-  }
-  
-  if (!isset($_GET['page'])) {
-    $curr_page = 1;
-  }
-  else {
-    $curr_page = $_GET['page'];
-  }
-
-  /* TODO: Use above values to construct a query. Use this query to 
-     retrieve data from the database. (If there is no form data entered,
-     decide on appropriate default value/default query to make. */
-  
-  /* For the purposes of pagination, it would also be helpful to know the
-     total number of results that satisfy the above query */
-  $num_results = 0; // TODO: Calculate me for real once recently viewed is implemented
-  $results_per_page = 10;
-  $max_page = ceil($num_results / $results_per_page);
-?>
-
-<div class="container mt-5">
-
-<!-- TODO: If result set is empty, print an informative message. Otherwise... -->
-
-<ul class="list-group">
-
-<!-- TODO: Use a while loop to print a list item for each auction listing
-     retrieved from the query -->
-
-
-
-</ul>
-
-<!-- Pagination for results listings -->
-<nav aria-label="Search results pages" class="mt-5">
-  <ul class="pagination justify-content-center">
-  
 <?php
 
-  // Copy any currently-set GET variables to the URL.
-  $querystring = "";
-  foreach ($_GET as $key => $value) {
-    if ($key != "page" && $key != "tab") {
-      $querystring .= "$key=$value&amp;";
+// Recently Viewed items using the `recent_items` cookie
+
+// If user has not accepted cookies or the cookie isn't there,
+// we can't show anything useful.
+$hasCookieConsent = (isset($_COOKIE['cookie_consent']) && $_COOKIE['cookie_consent'] === 'accept');
+
+if (!$hasCookieConsent) {
+    echo "<p class='mt-3'>We can only show your recently viewed items if you accept cookies and view some listings.</p>";
+} else {
+
+    $recentItems = [];
+
+    if (!empty($_COOKIE['recent_items'])) {
+        $decoded = json_decode($_COOKIE['recent_items'], true);
+        if (is_array($decoded)) {
+            foreach ($decoded as $id) {
+                $id = (int)$id;
+                if ($id > 0) {
+                    $recentItems[] = $id;
+                }
+            }
+        }
     }
-  }
-  
-  $high_page_boost = max(3 - $curr_page, 0);
-  $low_page_boost = max(2 - ($max_page - $curr_page), 0);
-  $low_page = max(1, $curr_page - 2 - $low_page_boost);
-  $high_page = min($max_page, $curr_page + 2 + $high_page_boost);
-  
-  if ($curr_page != 1) {
-    echo('
-    <li class="page-item">
-      <a class="page-link" href="my_profile.php?section=buyer&tab=viewed&' . $querystring . 'page=' . ($curr_page - 1) . '" aria-label="Previous">
-        <span aria-hidden="true"><i class="fa fa-arrow-left"></i></span>
-        <span class="sr-only">Previous</span>
-      </a>
-    </li>');
-  }
-  if ($num_results > 0){
-  for ($i = $low_page; $i <= $high_page; $i++) {
-    if ($i == $curr_page) {
-      // Highlight the link
-      echo('
-    <li class="page-item active">');
+
+    // Remove duplicates while preserving order
+    $recentItems = array_values(array_unique($recentItems));
+
+    if (empty($recentItems)) {
+        echo "<p class='mt-3'>You haven't viewed any items recently on this device.</p>";
+    } else {
+        // Build a query to fetch auctions for these item IDs
+        // and exclude items listed by the current user (if they're a seller).
+        $placeholders = implode(',', array_fill(0, count($recentItems), '?'));
+
+        $currentSellerId = isset($_SESSION['seller_id']) ? (int)$_SESSION['seller_id'] : null;
+
+        $sql = "
+          SELECT 
+            a.auction_id, a.start_bid, a.reserve_price,
+            a.buy_now_price, a.start_date_time, a.end_date_time,
+            i.item_id, i.title, i.description, i.photo_url, i.item_condition,
+            c.category_id, c.category_name,
+            COALESCE(MAX(b.amount), 0) AS highest_bid,
+            COUNT(b.bid_id) AS num_bids,
+            GREATEST(a.start_bid, COALESCE(MAX(b.amount), 0)) AS current_price,
+            a.seller_id
+          FROM auction AS a
+          JOIN item AS i ON a.item_id = i.item_id
+          JOIN category AS c ON c.category_id = i.category_id
+          LEFT JOIN bids AS b ON b.auction_id = a.auction_id
+          WHERE i.item_id IN ($placeholders)
+        ";
+
+        $params = $recentItems;
+        $types  = str_repeat('i', count($recentItems));
+
+        // If logged in as a seller, exclude their own listings
+        if (!is_null($currentSellerId) && $currentSellerId > 0) {
+            $sql .= " AND a.seller_id <> ? ";
+            $params[] = $currentSellerId;
+            $types   .= "i";
+        }
+
+        $sql .= " GROUP BY a.auction_id";
+
+        $stmt = $connection->prepare($sql);
+        if ($stmt === false) {
+            echo "<p class='mt-3 text-danger'>Error preparing query for recently viewed items.</p>";
+        } else {
+            // Bind parameters dynamically
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 0) {
+                echo "<p class='mt-3'>No recently viewed items to show. 
+                      (We don’t include items you have listed yourself.)</p>";
+            } else {
+                echo '<div class="list-container mt-3">';
+                // Re-order the results to match the order in the cookie (most recent first)
+                $rowsByItemId = [];
+                while ($row = $result->fetch_assoc()) {
+                    $rowsByItemId[(int)$row['item_id']] = $row;
+                }
+
+                // Build a temporary mysqli_result-like table for list_table_items
+                // by iterating in the correct order and printing directly.
+                echo '<ul class="list-group">';
+                foreach ($recentItems as $itemId) {
+                    if (!isset($rowsByItemId[$itemId])) {
+                        continue;
+                    }
+                    $row = $rowsByItemId[$itemId];
+
+                    $item_id        = $row['item_id'];
+                    $title          = $row['title'];
+                    $description    = $row['description'];
+                    $end_date       = new DateTime($row['end_date_time']);
+                    $start_date     = new DateTime($row['start_date_time']);
+                    $current_price  = $row['current_price'];
+                    $num_bids       = $row['num_bids'];
+                    $buy_now_price  = $row['buy_now_price'];
+                    $auction_id     = $row['auction_id'];
+
+                    // Reuse your existing listing renderer
+                    print_listing_li(
+                        $item_id,
+                        $title,
+                        $description,
+                        $current_price,
+                        $num_bids,
+                        $start_date,
+                        $end_date,
+                        $buy_now_price,
+                        false,
+                        $auction_id
+                    );
+                }
+                echo '</ul>';
+                echo '</div>';
+            }
+
+            $stmt->close();
+        }
     }
-    else {
-      // Non-highlighted link
-      echo('
-    <li class="page-item">');
-    }
-    
-    // Do this in any case
-    echo('
-      <a class="page-link" href="my_profile.php?section=buyer&tab=viewed&' . $querystring . 'page=' . $i . '">' . $i . '</a>
-    </li>');
-  }
-  
-  if ($curr_page != $max_page) {
-    echo('
-    <li class="page-item">
-      <a class="page-link" href="my_profile.php?section=buyer&tab=viewed&' . $querystring . 'page=' . ($curr_page + 1) . '" aria-label="Next">
-        <span aria-hidden="true"><i class="fa fa-arrow-right"></i></span>
-        <span class="sr-only">Next</span>
-      </a>
-    </li>');
-  }
 }
 ?>
 
-  </ul>
-</nav>
-
-
 </div>
-
-
-
-<?php
-  // This page is for showing a buyer recommended items based on their bid 
-  // history. It will be pretty similar to browse.php, except there is no 
-  // search bar. This can be started after browse.php is working with a database.
-  // Feel free to extract out useful functions from browse.php and put them in
-  // the shared "utilities.php" where they can be shared by multiple files.
-  
-  
-  // TODO: Check user's credentials (cookie/session).
-  
-  // TODO: Perform a query to pull up auctions they might be interested in.
-  
-  // TODO: Loop through results and print them out as list items.
-  
-?>
