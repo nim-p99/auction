@@ -55,7 +55,7 @@ else {
               'seller' => 'Seller'
             ];
             foreach ($sort_options as $key => $label) {
-              $selected = ($sort_by == $key) ? 'selected' : '';
+              $selected = ($filter_cat == $key) ? 'selected' : '';
               echo "<option value='$key' $selected>$label</option>";
             }
             ?>
