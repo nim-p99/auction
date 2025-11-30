@@ -9,6 +9,34 @@ date_default_timezone_set('Europe/London');
 
 require_once 'database.php';
 
+/**
+ * Handle cookie consent form submission
+ * ----------------------------------------
+ * This satisfies:
+ *  - Tell site visitors how cookies are being used (see cookies.php)
+ *  - Obtain user’s consent
+ *  - Do not use optional cookies if user does not consent
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cookie_choice'])) {
+    $choice = ($_POST['cookie_choice'] === 'accept') ? 'accept' : 'decline';
+
+    // Remember consent decision for 1 year
+    setcookie('cookie_consent', $choice, time() + (60 * 60 * 24 * 365), "/");
+
+    // If the user declines, immediately remove any optional login cookies we use
+    if ($choice === 'decline') {
+        if (isset($_COOKIE['userID'])) {
+            setcookie('userID', '', time() - 3600, "/");
+        }
+        if (isset($_COOKIE['username'])) {
+            setcookie('username', '', time() - 3600, "/");
+        }
+    }
+
+    // Make the choice visible in this request as well
+    $_COOKIE['cookie_consent'] = $choice;
+}
+
 
 // user not logged in - session defaults 
 if (!isset($_SESSION['logged_in'])) {
@@ -20,10 +48,21 @@ if (!isset($_SESSION['logged_in'])) {
   $_SESSION['admin_id'] = null;
 }
 
+/* If not logged in but we have login cookies AND consent, restore login */
+if (
+    $_SESSION['logged_in'] === false &&
+    isset($_COOKIE['cookie_consent']) && $_COOKIE['cookie_consent'] === 'accept' &&
+    isset($_COOKIE['userID']) && isset($_COOKIE['username'])
+) {
+    $_SESSION['logged_in'] = true;
+    $_SESSION['user_id']   = (int)$_COOKIE['userID'];
+}
+
 $username = null;
 $buyer_id = null;
 $seller_id = null;
 $admin_id = null;
+
 // user logged in - determine account type
 if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
@@ -99,6 +138,51 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
 #$username = $_SESSION['user_id']
 
+$hasCookieConsent = (isset($_COOKIE['cookie_consent']) && $_COOKIE['cookie_consent'] === 'accept');
+// Track recently viewed items
+
+if ($hasCookieConsent) {
+    $currentScript = basename($_SERVER['PHP_SELF'] ?? '');
+
+    if ($currentScript === 'listing.php' && isset($_GET['item_id'])) {
+        $itemId = (int)$_GET['item_id'];
+
+        if ($itemId > 0) {
+            $recentItems = [];
+
+            if (!empty($_COOKIE['recent_items'])) {
+                $decoded = json_decode($_COOKIE['recent_items'], true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $id) {
+                        $id = (int)$id;
+                        if ($id > 0) {
+                            $recentItems[] = $id;
+                        }
+                    }
+                }
+            }
+
+            // Remove if it already exists (add to the front)
+            $recentItems = array_values(array_filter(
+                $recentItems,
+                function($id) use ($itemId) {
+                    return (int)$id !== $itemId;
+                }
+            ));
+
+            // Add item to the front
+            array_unshift($recentItems, $itemId);
+
+            // Keep only the 10 most recent
+            $recentItems = array_slice($recentItems, 0, 10);
+
+            $encoded = json_encode($recentItems);
+            setcookie('recent_items', $encoded, time() + (60 * 60 * 24 * 30), "/");
+            $_COOKIE['recent_items'] = $encoded;
+        }
+    }
+}
+
 
 ?>
 
@@ -124,6 +208,30 @@ if (isset($_SESSION['user_id']) && $_SESSION['logged_in']) {
 
 
 <body>
+
+<?php if ($_SESSION['logged_in'] === true && !isset($_COOKIE['cookie_consent'])): ?>
+  <div class="alert alert-info altert-dismissible fade show mb-0" role="alert" style="position: sticy; top: 0; z-index: 1050;">
+    <div class="container d-flex flex-column flex-md-row align-items-md-center">
+      <div class="mr-md-3">
+        <strong>Cookies on Auction Site</strong>
+        <p class="mb-0 small">
+          We use essential cookies to make this site work and optional cookies to remember you and improve your experience. You can read more on our<a href="cookies.php" class="alert-link"> Cookies page</a>.
+        </p>
+      </div>
+      <div class="ml-md-auto mt-3 mt-md-0">
+        <form method="post" class="d-inline">
+          <input type="hidden" name="cookie_choice" value="accept">
+          <button type="submit" class="btn btn-sm btn-primary mr-4">Accept cookies</button>
+        </form>
+
+        <form method="post" class="d-inline">
+          <input type="hidden" name="cookie_choice" value="decline">
+          <button type="submit" class="btn btn-sm btn-secondary">Decline</button>
+        </form>
+      </div>
+    </div>
+  </div>
+<?php endif; ?>  
 
 <!-- Navbars -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light mx-2">
