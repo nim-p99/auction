@@ -12,6 +12,8 @@
           <!-- <li class="list-inline-item"><a href="about.php">About Us</a></li>
           <li class="list-inline-item">&middot;</li> -->
           <li class="list-inline-item"><a href="contact_admin.php">Contact Admin</a></li>
+          <li class="list-inline-item">&middot;</li>
+          <li class="list-inline-item"><a href="cookies.php">Cookies</a></li>
         </ul>
       </div>
     </div>
