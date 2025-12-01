@@ -3,7 +3,7 @@ include_once "header.php";
 ?>
 
 <div class="container mt-4 mb-4">
-  <h2 class="my-3">Cookies on Auction Site</h2>
+  <h2 class="my-3">Cookies on UCeL</h2>
 
   <p>
     This page explains how we use cookies on this site and the choices you have.
