@@ -351,7 +351,7 @@
      <p class="lead">Starting bid: £<?php echo(number_format($auction['start_bid'], 2)) ?></p>
 <?php else: ?>
      <p>Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
-    <p class="lead">Current bid: £<span id="current_price_display"><?php echo(number_format($highest_bid, 2)) ?></span></p>
+    <p class="lead">Current bid: £<span id="current_price_display"><?php echo(number_format(max($highest_bid, $auction['start_bid'], 2))); ?></span></p>
 
     <?php
     // user logged in  

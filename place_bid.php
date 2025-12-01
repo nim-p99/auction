@@ -19,6 +19,7 @@ if(!isset($_SESSION['user_id'])){
     exit();   
 }
 
+
 $buyer_id = $_SESSION['buyer_id'];
 // Get POST data
 $bid_amount = (float)$_POST['bid'] ?? null;
@@ -30,6 +31,28 @@ $item_id = (int)$_POST['item_id'] ?? null;
 /* echo '</pre>'; */
 /* exit(); */
 
+$query = $connection-> prepare("
+    SELECT a.end_date_time, a.start_bid, a.seller_id, MAX(b.amount) AS actual_highest_bid 
+    FROM auction AS a
+    LEFT JOIN bids AS b ON a.auction_id = b.auction_id
+    WHERE a.auction_id = ?
+");
+$query->bind_param("i", $auction_id);
+$query->execute();
+$result = $query->get_result();
+$auction_data = $result->fetch_assoc();
+if ($auction_data) {
+    $actual_highest_bid = $auction_data['actual_highest_bid'];
+    if ($actual_highest_bid !== null) {
+        $highest_bid = (float)$actual_highest_bid;
+    } else {
+        $highest_bid = (float)$auction_data['start_bid'];
+    }
+} else {
+    $_SESSION["error_message"]= " Invalid auction!";
+    header("Location: listing.php?item_id=" . $item_id);
+    exit();
+};
 
 // If bid amount missing = error
 if (!is_numeric($bid_amount) || $bid_amount <= 0) {
