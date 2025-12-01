@@ -103,9 +103,17 @@
     $highest_bid = 0;
   }
 
+  // reserve logic
+  $reserve_price = $auction['reserve_price'];
+  $reserve_met = (
+    $reserve_price === null ||
+    $reserve_price <= 0 ||
+    $highest_bid >= $reserve_price
+  );
+
   // get winning bidder if auction ended
   $winning_bidder = null;
-  if ($now>$end_time && $highest_bid > 0) { // added 0 to make sure at least 1 bid placed
+  if ($now>$end_time && $highest_bid > 0 && $reserve_met) { // added 0 to make sure at least 1 bid placed
     $winner_id_query =$connection->prepare("
       SELECT bd.amount, bd.buyer_id, u.email, u.first_name, i.title, a.mail_sent, bd.bid_id
       FROM bids AS bd
@@ -345,7 +353,17 @@
    
     <?php if ($now > $end_time): ?>
      <p>This auction ended <?php echo(date_format($end_time, 'j M H:i'))?></p>
-     <p>Winning bid: £<?php echo(number_format($highest_bid, 2))?></p>
+
+     <?php if ($highest_bid == 0): ?>
+        <p>No bids were placed.</p>
+      <?php elseif (!is_null($auction['reserve_price']) && $auction['reserve_price'] > 0 && $highest_bid < $auction['reserve_price']): ?>
+        <p>Highest bid: £<?php echo number_format($highest_bid, 2); ?></p>
+        <p class="text-danger mb-0">Reserve price was not met. The item was not sold.</p>
+      
+      <?php else: ?>
+        <p>Winning bid: £<?php echo(number_format($highest_bid, 2))?></p>
+      <?php endif; ?>
+      
      <?php elseif ($now < $start_time): ?>
      <p>This auction starts on <?php echo(date_format($start_time, 'j M H:i'))?></p>
      <p class="lead">Starting bid: £<?php echo(number_format($auction['start_bid'], 2)) ?></p>
