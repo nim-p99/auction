@@ -350,8 +350,11 @@
      <p>This auction starts on <?php echo(date_format($start_time, 'j M H:i'))?></p>
      <p class="lead">Starting bid: £<?php echo(number_format($auction['start_bid'], 2)) ?></p>
 <?php else: ?>
-     <p>Auction ends <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?></p>  
-    <p class="lead">Current bid: £<span id="current_price_display"><?php echo(number_format(max($highest_bid, $auction['start_bid'], 2))); ?></span></p>
+     <p><span id="auction_timer" data-endtime="<?php echo $end_time->format('c'); ?>">
+           <?php echo(date_format($end_time, 'j M H:i') . $time_remaining) ?>
+        </span>
+      </p>  
+      <p class="lead">Current bid: £<span id="current_price_display"><?php echo(number_format(max($highest_bid, $auction['start_bid'], 2))); ?></span></p>
 
     <?php
     // user logged in  
@@ -527,4 +530,44 @@ function removeFromWatchlist(button) {
       });
     }, 2000); // run every second
   });
+</script>
+<script>
+  // Live timer
+$(document).ready(function() {
+
+    var timerElement = document.getElementById("auction_timer");
+
+    //run if the timer element exists
+    if (timerElement) {
+        var endTimeString = timerElement.getAttribute("data-endtime");
+        var endTime = new Date(endTimeString).getTime();
+
+        // update the count down every 1 second
+        var countdownInterval = setInterval(function() {
+
+            var now = new Date().getTime();
+
+            var distance = endTime - now;
+
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            var displayString = "";
+            if (days > 0) displayString += days + "d ";
+            if (hours > 0) displayString += hours + "h ";
+            displayString += minutes + "m " + seconds + "s";
+            
+            $("#auction_timer").text(displayString);
+
+            // if 0, reload the page
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                $("#auction_timer").text("EXPIRED");
+                location.reload(); 
+            }
+        }, 1000);
+    }
+});
 </script>
