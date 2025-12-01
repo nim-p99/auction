@@ -213,7 +213,7 @@ if ($hasCookieConsent) {
   <div class="alert alert-info altert-dismissible fade show mb-0" role="alert" style="position: sticy; top: 0; z-index: 1050;">
     <div class="container d-flex flex-column flex-md-row align-items-md-center">
       <div class="mr-md-3">
-        <strong>Cookies on Auction Site</strong>
+        <strong>Cookies on UCeL</strong>
         <p class="mb-0 small">
           We use essential cookies to make this site work and optional cookies to remember you and improve your experience. You can read more on our<a href="cookies.php" class="alert-link"> Cookies page</a>.
         </p>
