@@ -5,7 +5,7 @@
     <hr>
     <div class="row">
       <div class="col-md-6">
-        <p>&copy; Auction Site <?php echo date('Y'); ?></p>
+        <p>&copy; UCeL <?php echo date('Y'); ?></p>
       </div>
       <div class="col-md-6 text-right">
         <ul class="list-inline">
