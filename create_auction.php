@@ -201,6 +201,7 @@
             <small id="reservePriceHelp" class="form-text text-muted">
               Optional. Auctions that end below this price will not go through. This value is not displayed in the auction listing.
             </small>
+            <small id="reserveError" class="text-danger" style="display:none;"></small>
           </div>
         </div>
 
@@ -433,6 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const detailsInput      = document.getElementById('auctionDetails');
 
   const startPriceInput   = document.getElementById('auctionStartPrice');
+  const reserveInput      = document.getElementById('auctionReservePrice');
   const buyNowInput       = document.getElementById('auctionBuyNowPrice');
 
   const startDateInput    = document.getElementById('auctionStartDate');
@@ -463,6 +465,11 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       startVal = parseFloat(startPriceInput.value);
       if (isNaN(startVal) || startVal < 0.01) formIsValid = false;
+    }
+
+    let buyVal = NaN;
+    if (buyNowInput) {
+      buyVal = parseFloat(buyNowInput.value);
     }
 
     // ----- Start date -----
@@ -500,6 +507,40 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    // ----- Reserve validation -----
+    if (reserveInput) {
+      reserveInput.classList.remove("is-invalid");
+    }
+    if (reserveError) {
+      reserveError.style.display = "none";
+      reserveError.textContent = "";
+    }
+
+    if (reserveInput && reserveInput.value !== "") {
+      const reserveVal = parseFloat(reserveInput.value);
+
+      if (!isNaN(reserveVal)) {
+        // Reserve must be at least the starting price
+        if (!isNaN(startVal) && reserveVal < startVal) {
+          if (reserveError) {
+            reserveError.textContent = "Reserve price must be at least the starting price.";
+            reserveError.style.display = "block";
+          }
+          reserveInput.classList.add("is-invalid");
+          formIsValid = false;
+        }
+        // If there is a buy now price, reserve must be lower than buy now
+        if (!isNaN(buyVal) && reserveVal >= buyVal) {
+          if (reserveError) {
+            reserveError.textContent = "Reserve price must be lower than the buy now price.";
+            reserveError.style.display = "block";
+          }
+          reserveInput.classList.add("is-invalid");
+          formIsValid = false;
+        }
+      }
+    }
+
     // ----- Buy Now validation -----
     if (buyNowInput) {
       buyNowInput.classList.remove("is-invalid");
@@ -509,24 +550,21 @@ document.addEventListener('DOMContentLoaded', function () {
       buyNowError.textContent   = "";
     }
 
-    if (buyNowInput) {
-      const buyVal = parseFloat(buyNowInput.value);
-      if (!isNaN(buyVal)) {
-        if (buyVal < 0) {
-          if (buyNowError) {
-            buyNowError.textContent = "Buy now price cannot be negative.";
-            buyNowError.style.display = "block";
-          }
-          buyNowInput.classList.add("is-invalid");
-          formIsValid = false;
-        } else if (!isNaN(startVal) && buyVal < startVal) {
-          if (buyNowError) {
-            buyNowError.textContent = "Buy now price must be at least the starting price.";
-            buyNowError.style.display = "block";
-          }
-          buyNowInput.classList.add("is-invalid");
-          formIsValid = false;
+    if (buyNowInput && !isNaN(buyVal)) {
+      if (buyVal < 0) {
+        if (buyNowError) {
+          buyNowError.textContent = "Buy now price cannot be negative.";
+          buyNowError.style.display = "block";
         }
+        buyNowInput.classList.add("is-invalid");
+        formIsValid = false;
+      } else if (!isNaN(startVal) && buyVal < startVal) {
+        if (buyNowError) {
+          buyNowError.textContent = "Buy now price must be at least the starting price.";
+          buyNowError.style.display = "block";
+        }
+        buyNowInput.classList.add("is-invalid");
+        formIsValid = false;
       }
     }
 
@@ -549,8 +587,9 @@ document.addEventListener('DOMContentLoaded', function () {
       validateForm();
     });
   }
-  if (endDateInput)    endDateInput.addEventListener('input',   validateForm);
-  if (buyNowInput)     buyNowInput.addEventListener('input',    validateForm);
+  if (endDateInput)    endDateInput.addEventListener('input', validateForm);
+  if (reserveInput)    reserveInput.addEventListener('input', validateForm);
+  if (buyNowInput)     buyNowInput.addEventListener('input',  validateForm);
 
   // Run once on load to set initial disabled/enabled state
   validateForm();

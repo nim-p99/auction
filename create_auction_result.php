@@ -76,11 +76,16 @@ if ($buy_now_raw !== '') {
     }
     if ($start_price !== null && $buy_now_price < $start_price) {
       $errors[] = "Buy now price must be at least the starting price.";
-    }
-    if ($reserve_price !== null && $buy_now_price < $reserve_price) {
-      $errors[] = "Buy now price must be at least the reserve price.";
-    }
+    }  
   }
+}
+
+if ($reserve_price !== null && $start_price !== null && $reserve_price < $start_price) {
+  $errors[] = "Reserve price must be at least the starting price.";
+}
+
+if ($reserve_price !== null && $buy_now_price !== null && $reserve_price >= $buy_now_price) {
+  $errors[] = "Reserve price must be lower than the buy now price.";
 }
 
 // ----- Dates (start + end, at least 1 hour apart) -----
